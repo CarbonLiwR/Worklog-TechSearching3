@@ -3,7 +3,7 @@
   <div class="search-container">
     <h1>技术寻人</h1>
     <form id="searchForm" action="/worklogs/search" @submit.prevent="handleSearch">
-      <input type="text" name="q" placeholder="搜索日志..." v-model="searchQuery">
+      <input type="text" name="q" placeholder="搜索日志..." v-model="searchQuery" style="margin-bottom: 0" >
       <input type="submit" style="font-size: 16px" id="searchButton" value="搜索">
     </form>
 
@@ -42,11 +42,10 @@ import {useUserStore} from '@/store';
 const drawer = ref(false)
 const userStore = useUserStore();
 const searchQuery = ref('');
-// const CurrentUserInfo = ref(null); // 使用 ref 保存用户信息
+const CurrentUserInfo = ref(null); // 使用 ref 保存用户信息
 
 // const isLoggedIn = computed(() => !!CurrentUserInfo.value?.username); // 判断用户是否登录
-// const isAdmin = computed(() => {
-// });
+// const isAdmin = computed(() => {});
 //
 // const getCurrentUserInfo = async () => {
 //   const response = await axios.get('http://localhost:8000/api/v1/sys/users/me', {
@@ -58,20 +57,20 @@ const searchQuery = ref('');
 //   console.log(CurrentUserInfo.value);
 // };
 
-onMounted(async () => {
-  await refreshtoken();
-  // await getCurrentUserInfo(); // 调用获取用户信息的函数
-  // // 如果没有登录，绑定搜索按钮的点击事件
-  // if (!isLoggedIn.value) {
-  //   const searchButton = document.getElementById('searchButton');
-  //   if (searchButton) {
-  //     searchButton.addEventListener('click', (event) => {
-  //       event.preventDefault(); // 阻止默认行为
-  //       alert('请先登录');
-  //     });
-  //   }
-  // }
-});
+// onMounted(async () => {
+//   // await refreshtoken();
+//   await getCurrentUserInfo(); // 调用获取用户信息的函数
+//   // 如果没有登录，绑定搜索按钮的点击事件
+//   if (!isLoggedIn.value) {
+//     const searchButton = document.getElementById('searchButton');
+//     if (searchButton) {
+//       searchButton.addEventListener('click', (event) => {
+//         event.preventDefault(); // 阻止默认行为
+//         alert('请先登录');
+//       });
+//     }
+//   }
+// });
 
 </script>
 
