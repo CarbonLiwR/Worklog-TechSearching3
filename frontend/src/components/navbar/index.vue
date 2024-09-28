@@ -2,17 +2,17 @@
   <div class="navbar">
     <div class="left-side">
       <a-space>
-        <back/>
-      </a-space>
-      <a-space>
-        <span>               </span><span>               </span> <span>               </span>
-        <span>               </span><span>               </span><span>               </span>
-        <span>               </span> <span>               </span>
+<!--        <back/>-->
+<!--      </a-space>-->
+<!--      <a-space>-->
+<!--        <span>               </span><span>               </span> <span>               </span>-->
+<!--        <span>               </span><span>               </span><span>               </span>-->
+<!--        <span>               </span> <span>               </span>-->
         <a-typography-title
           :heading="5"
           :style="{ margin: 0, fontSize: '18px' }"
         >
-          技术寻人控制面板
+          技术寻人
         </a-typography-title>
         <icon-menu-fold
           v-if="!topMenu && appStore.device === 'mobile'"

@@ -2,11 +2,11 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <div class="search-container">
     <h1>技术寻人</h1>
-
     <form id="searchForm" action="/worklogs/search" @submit.prevent="handleSearch">
       <input type="text" name="q" placeholder="搜索日志..." v-model="searchQuery">
       <input type="submit" style="font-size: 16px" id="searchButton" value="搜索">
     </form>
+
 
     <div class="action-buttons">
       <!-- 登录/注册按钮，未登录时显示 -->
@@ -16,25 +16,21 @@
       </a>
 
       <!-- 添加日志按钮，已登录用户显示 -->
-      <a href="/worklogs/add" class="bottom-button" id="addLogButton" v-if="isLoggedIn">
+      <a href="/worklogs/add" class="bottom-button" id="addLogButton" >
         <span style="font-size: 17px">&#43;</span> 添加日志
       </a>
 
       <!-- 查看日志按钮，已登录用户显示 -->
-      <a href="/worklogs/show" class="bottom-button" id="showLogButton" v-if="isLoggedIn">
+      <a href="/worklogs/show" class="bottom-button" id="showLogButton">
         <span>&#128065;</span> 查看日志
       </a>
 
       <!-- 管理组按钮，只有管理员显示 -->
-      <a href="/dashboard/workplace" class="bottom-button" id="manageGroupButton" >
+      <a href="/dashboard/workplace" class="bottom-button" id="manageGroupButton">
         <span>&#9881;</span> 管理组
       </a>
     </div>
-    <!--    <button @click="getCurrentUserInfo();">adda</button>-->
   </div>
-<!--  <div class="avatar" v-if="isLoggedIn">-->
-<!--    <avatar/>-->
-<!--  </div>-->
 </template>
 
 <script setup>
@@ -42,36 +38,39 @@ import {ref, computed, onMounted} from 'vue';
 import axios from 'axios';
 import {useUserStore} from '@/store';
 
+
+const drawer = ref(false)
 const userStore = useUserStore();
 const searchQuery = ref('');
-const CurrentUserInfo = ref(null); // 使用 ref 保存用户信息
+// const CurrentUserInfo = ref(null); // 使用 ref 保存用户信息
 
-const isLoggedIn = computed(() => !!CurrentUserInfo.value?.username); // 判断用户是否登录
-const isAdmin = computed(() => {
-});
-
-const getCurrentUserInfo = async () => {
-  const response = await axios.get('http://localhost:8000/api/v1/sys/users/me', {
-    headers: {
-      'Accept': 'application/json',
-    },
-  });
-  CurrentUserInfo.value = response; // 保存用户信息
-  console.log(CurrentUserInfo.value);
-};
+// const isLoggedIn = computed(() => !!CurrentUserInfo.value?.username); // 判断用户是否登录
+// const isAdmin = computed(() => {
+// });
+//
+// const getCurrentUserInfo = async () => {
+//   const response = await axios.get('http://localhost:8000/api/v1/sys/users/me', {
+//     headers: {
+//       'Accept': 'application/json',
+//     },
+//   });
+//   CurrentUserInfo.value = response; // 保存用户信息
+//   console.log(CurrentUserInfo.value);
+// };
 
 onMounted(async () => {
-  await getCurrentUserInfo(); // 调用获取用户信息的函数
-  // 如果没有登录，绑定搜索按钮的点击事件
-  if (!isLoggedIn.value) {
-    const searchButton = document.getElementById('searchButton');
-    if (searchButton) {
-      searchButton.addEventListener('click', (event) => {
-        event.preventDefault(); // 阻止默认行为
-        alert('请先登录');
-      });
-    }
-  }
+  await refreshtoken();
+  // await getCurrentUserInfo(); // 调用获取用户信息的函数
+  // // 如果没有登录，绑定搜索按钮的点击事件
+  // if (!isLoggedIn.value) {
+  //   const searchButton = document.getElementById('searchButton');
+  //   if (searchButton) {
+  //     searchButton.addEventListener('click', (event) => {
+  //       event.preventDefault(); // 阻止默认行为
+  //       alert('请先登录');
+  //     });
+  //   }
+  // }
 });
 
 </script>
@@ -86,6 +85,7 @@ h1 {
   color: transparent;
   margin-bottom: 40px; /* 增大标题与搜索框之间的距离 */
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1), /* 更轻的底部阴影 */ 0 2px 4px rgba(255, 255, 255, 0.7); /* 更亮的顶部高光 */
+  cursor: pointer; /* 鼠标悬停时显示手形光标 */
 }
 
 .search-container {
@@ -156,10 +156,4 @@ h1 {
   color: #bdc3c7; /* 淡灰色 */
 }
 
-.avatar {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 9999; /* 前景层次 */
-}
 </style>

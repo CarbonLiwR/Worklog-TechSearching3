@@ -68,7 +68,10 @@ class Settings(BaseSettings):
     TOKEN_REFRESH_REDIS_PREFIX: str = 'fba:refresh_token'
     TOKEN_REQUEST_PATH_EXCLUDE: list[str] = [  # JWT / RBAC 白名单
         f'{FASTAPI_API_V1_PATH}/auth/login',
-        f'{FASTAPI_API_V1_PATH}/auth/token/new',
+        f'{FASTAPI_API_V1_PATH}/auth/logout',
+        f'{FASTAPI_API_V1_PATH}/auth/captcha',
+        f'{FASTAPI_API_V1_PATH}/sys/users/register',
+        f'{FASTAPI_API_V1_PATH}/sys/users/reset_password',
     ]
 
     # JWT

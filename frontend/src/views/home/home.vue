@@ -1,28 +1,28 @@
+
 <template>
   <div class="main-container">
     <canvas id="myCanvas" ref="canvas"></canvas>
-    <theme/>
-
+    <theme />
   </div>
 </template>
 
 <script setup>
-import {ref, onMounted, onUnmounted} from 'vue';
+import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import theme from '@/components/home/theme.vue';
 
-
+const canvas = ref(null); // 使用 ref
+const drawer = ref(false);
 const particleCount = 300;
 const particleSpeed = 0.25;
 const particleSize = 2;
 const maxDistance = 100;
 const lightningColor = "#fff";
 
-const canvas = ref(null);
-
 let animationFrameId;
 
-onMounted(() => {
-  const ctx = canvas.value.getContext("2d");
+onMounted(async () => {
+  await nextTick(); // 确保 DOM 已经渲染
+  const ctx = canvas.value.getContext("2d"); // 获取 canvas
 
   function setCanvasSize() {
     canvas.value.width = window.innerWidth;
@@ -102,24 +102,6 @@ onMounted(() => {
     animationFrameId = requestAnimationFrame(animate);
   }
 
-  document.addEventListener("mousemove", (e) => {
-    const mouseX = e.clientX;
-    const mouseY = e.clientY;
-
-    particles.forEach(particle => {
-      const dx = mouseX - particle.x;
-      const dy = mouseY - particle.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-
-      if (distance < maxDistance) {
-        particle.angle = Math.atan2(dy, dx);
-        particle.speed = 5;
-      } else {
-        particle.speed = Math.random() * particleSpeed;
-      }
-    });
-  });
-
   createParticles();
   animate();
 
@@ -129,6 +111,8 @@ onMounted(() => {
   });
 });
 </script>
+
+
 
 <style scoped>
 .main-container {
@@ -150,7 +134,13 @@ canvas {
   width: 100%;
   height: 100%;
   background: linear-gradient(to right, #15ccff, #7772ff);
-  z-index: 1; /* 背景层次 */
+}
+
+
+theme {
+  position: relative; /* 确保不受其他元素影响 */
+  z-index: 2; /* 确保在 canvas 之上 */
+
 }
 
 </style>

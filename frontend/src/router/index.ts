@@ -37,6 +37,23 @@ const router = createRouter({
                 },
 
             },
+            {
+              path: '/worklogs',
+              name: 'worklogs',
+                children: [
+                    {
+                        path: 'add',
+                        name: 'addlog',
+                        component: () => import('@/views/worklog/addlog.vue'),
+                    },
+                    {
+                        path: 'show',
+                        name: 'showlog',
+                        component: () => import('@/views/worklog/showlog.vue'),
+                    }
+                    ]
+            },
+
             ...appRoutes,
             REDIRECT_MAIN,
             NOT_FOUND_ROUTE,

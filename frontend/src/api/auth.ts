@@ -23,6 +23,11 @@ export function login(data: LoginData): Promise<LoginRes> {
   return axios.post('/api/v1/auth/login', data);
 }
 
+
+export function registerUser(data: RegisterData): Promise<RegisterRes> {
+    return axios.post('/api/v1/sys/users/register', data);
+}
+
 export function logout() {
   return axios.post('/api/v1/auth/logout');
 }

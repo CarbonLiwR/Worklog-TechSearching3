@@ -83,26 +83,26 @@
         </a-input-password>
       </a-form-item>
       <!--              重复密码-->
-      <a-form-item
-          :rules="[
-              { required: true, message: $t('register.form.confirmPassword.errMsg') },
-              { validator: validateConfirmPassword, trigger: 'blur' }
-          ]"
-          :validate-trigger="['change', 'blur']"
-          field="confirmPassword"
-          hide-label
-      >
-        <a-input-password
-            v-model="userInfo.confirmPassword"
-            class="register-input"
-            :placeholder="$t('register.form.confirmPassword.placeholder')"
-            allow-clear
-        >
-          <template #prefix>
-            <icon-lock/>
-          </template>
-        </a-input-password>
-      </a-form-item>
+<!--      <a-form-item-->
+<!--          :rules="[-->
+<!--              { required: true, message: $t('register.form.confirmPassword.errMsg') },-->
+<!--              { validator: validateConfirmPassword, trigger: 'blur' }-->
+<!--          ]"-->
+<!--          :validate-trigger="['change', 'blur']"-->
+<!--          field="confirmPassword"-->
+<!--          hide-label-->
+<!--      >-->
+<!--        <a-input-password-->
+<!--            v-model="userInfo.confirmPassword"-->
+<!--            class="register-input"-->
+<!--            :placeholder="$t('register.form.confirmPassword.placeholder')"-->
+<!--            allow-clear-->
+<!--        >-->
+<!--          <template #prefix>-->
+<!--            <icon-lock/>-->
+<!--          </template>-->
+<!--        </a-input-password>-->
+<!--      </a-form-item>-->
       <!--      验证码-->
       <a-form-item
           :rules="[{ required: true, message: $t('register.form.captcha.errMsg') }]"
@@ -167,6 +167,7 @@ const refreshCaptcha = async () => {
   }
 };
 refreshCaptcha();
+
 const validateConfirmPassword = (_: any, value: string) => {
   if (value !== userInfo.password) {
     return Promise.reject(new Error(t('register.form.confirmPassword.mismatch')));
@@ -178,6 +179,7 @@ const handleSubmit = async () => {
   if (loading.value) return;
   setLoading(true);
   try {
+    console.log('开始注册', userInfo);
     await userStore.register(userInfo); // 提交注册信息
     Message.success(t('register.form.register.success'));
     router.push('/login'); // 注册成功后跳转到登录页面

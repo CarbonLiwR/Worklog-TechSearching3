@@ -9,6 +9,7 @@ import { WHITE_LIST } from '@/router/constants';
 import { AppRouteRecordRaw } from '@/router/routes/types';
 import DASHBOARD from '@/router/routes/modules/dashboard';
 import { AppState, MenuItem } from './types';
+import TECH_LOGS from "@/router/routes/modules/worklog";
 
 function generateMenu(
   data: MenuItem[],
@@ -99,15 +100,13 @@ const useAppStore = defineStore('app', {
         });
         const data = await getUserMenuList();
         if (data.length === 0) {
-          this.serverMenu = [DASHBOARD] as unknown as RouteRecordNormalized[];
+          this.serverMenu = [DASHBOARD,TECH_LOGS] as unknown as RouteRecordNormalized[];
         } else if (!data.some((item) => item.name === 'dashboard')) {
-          this.serverMenu = [DASHBOARD].concat(
+          this.serverMenu = [DASHBOARD,TECH_LOGS].concat(
             generateMenu(data)
           ) as unknown as RouteRecordNormalized[];
         } else {
-          this.serverMenu = generateMenu(
-            data
-          ) as unknown as RouteRecordNormalized[];
+          this.serverMenu = [TECH_LOGS].concat(generateMenu(data)) as unknown as RouteRecordNormalized[];
         }
         notifyInstance = Notification.success({
           id: 'menuNotice',
