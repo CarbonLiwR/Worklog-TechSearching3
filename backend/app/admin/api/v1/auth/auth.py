@@ -28,6 +28,7 @@ async def swagger_login(obj: Annotated[HTTPBasicCredentials, Depends()]) -> GetS
     description='json 格式登录, 仅支持在第三方api工具调试, 例如: postman',
     dependencies=[Depends(RateLimiter(times=5, minutes=1))],
 )
+
 async def user_login(
     request: Request, response: Response, obj: AuthLoginParam, background_tasks: BackgroundTasks
 ) -> ResponseModel:

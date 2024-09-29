@@ -11,7 +11,6 @@ import App from './App.vue';
 import '@/assets/style/global.less';
 import '@/api/interceptor';
 import ElementPlus from 'element-plus';
-import './mock/mock';  // 引入 mock.ts
 
 const app = createApp(App);
 app.config.warnHandler = () => null;

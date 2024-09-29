@@ -62,16 +62,16 @@ class Settings(BaseSettings):
 
     # Token
     TOKEN_ALGORITHM: str = 'HS256'  # 算法
-    TOKEN_EXPIRE_SECONDS: int = 60 * 60 * 24 * 1  # 过期时间，单位：秒
-    TOKEN_REFRESH_EXPIRE_SECONDS: int = 60 * 60 * 24 * 7  # refresh token 过期时间，单位：秒
+    TOKEN_EXPIRE_SECONDS: int = 60 * 60 * 24 * 365  # 过期时间，单位：秒 ？？一年？？
+    TOKEN_REFRESH_EXPIRE_SECONDS: int = 60 * 60 * 24 * 365  # refresh token 过期时间，单位：秒
     TOKEN_REDIS_PREFIX: str = 'fba:token'
     TOKEN_REFRESH_REDIS_PREFIX: str = 'fba:refresh_token'
     TOKEN_REQUEST_PATH_EXCLUDE: list[str] = [  # JWT / RBAC 白名单
         f'{FASTAPI_API_V1_PATH}/auth/login',
-        f'{FASTAPI_API_V1_PATH}/auth/logout',
         f'{FASTAPI_API_V1_PATH}/auth/captcha',
         f'{FASTAPI_API_V1_PATH}/sys/users/register',
         f'{FASTAPI_API_V1_PATH}/sys/users/reset_password',
+        f'{FASTAPI_API_V1_PATH}/show/worklogs/show',
     ]
 
     # JWT

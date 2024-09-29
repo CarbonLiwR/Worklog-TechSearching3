@@ -46,7 +46,6 @@ class RedisCli(Redis):
         :param exclude:
         :return:
         """
-        print("delete_prefix正在工作")
         keys = []
         async for key in self.scan_iter(match=f'{prefix}*'):
             if isinstance(exclude, str):

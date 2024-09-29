@@ -3,7 +3,7 @@ import { AppRouteRecordRaw } from '../types';
 
 const TECH_LOGS: AppRouteRecordRaw = {
   path: '/worklogs',
-  name: 'worklogs',
+  name: 'work_logs',
   component: DEFAULT_LAYOUT,
   meta: {
     locale: 'menu.technicalSeeker',

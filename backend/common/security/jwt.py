@@ -56,7 +56,6 @@ async def create_access_token(sub: str, multi_login: bool) -> AccessToken:
     expire_seconds = settings.TOKEN_EXPIRE_SECONDS
 
     to_encode = {'exp': expire, 'sub': sub}
-    print(to_encode)
     access_token = jwt.encode(to_encode, settings.TOKEN_SECRET_KEY, settings.TOKEN_ALGORITHM)
 
     if multi_login is False:

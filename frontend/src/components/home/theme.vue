@@ -3,7 +3,7 @@
   <div class="search-container">
     <h1>技术寻人</h1>
     <form id="searchForm" action="/worklogs/search" @submit.prevent="handleSearch">
-      <input type="text" name="q" placeholder="搜索日志..." v-model="searchQuery">
+      <input type="text" name="q" placeholder="搜索日志..." v-model="searchQuery" style="margin-bottom: 0" >
       <input type="submit" style="font-size: 16px" id="searchButton" value="搜索">
     </form>
 
@@ -16,17 +16,17 @@
       </a>
 
       <!-- 添加日志按钮，已登录用户显示 -->
-      <a href="/worklogs/add" class="bottom-button" id="addLogButton" >
+      <a href="/worklogs/add" class="bottom-button" id="addLogButton" v-if="isLoggedIn" >
         <span style="font-size: 17px">&#43;</span> 添加日志
       </a>
 
       <!-- 查看日志按钮，已登录用户显示 -->
-      <a href="/worklogs/show" class="bottom-button" id="showLogButton">
+      <a href="/worklogs/show" class="bottom-button" id="showLogButton" v-if="isLoggedIn">
         <span>&#128065;</span> 查看日志
       </a>
 
       <!-- 管理组按钮，只有管理员显示 -->
-      <a href="/dashboard/workplace" class="bottom-button" id="manageGroupButton">
+      <a href="/dashboard/workplace" class="bottom-button" id="manageGroupButton" v-if="isLoggedIn">
         <span>&#9881;</span> 管理组
       </a>
     </div>
@@ -42,37 +42,39 @@ import {useUserStore} from '@/store';
 const drawer = ref(false)
 const userStore = useUserStore();
 const searchQuery = ref('');
-// const CurrentUserInfo = ref(null); // 使用 ref 保存用户信息
+const CurrentUserInfo = ref(null); // 使用 ref 保存用户信息
 
-// const isLoggedIn = computed(() => !!CurrentUserInfo.value?.username); // 判断用户是否登录
-// const isAdmin = computed(() => {
-// });
+const isLoggedIn = computed(() => !!CurrentUserInfo.value?.username); // 判断用户是否登录
+// const isAdmin = computed(() => {});
 //
-// const getCurrentUserInfo = async () => {
-//   const response = await axios.get('http://localhost:8000/api/v1/sys/users/me', {
-//     headers: {
-//       'Accept': 'application/json',
-//     },
-//   });
-//   CurrentUserInfo.value = response; // 保存用户信息
-//   console.log(CurrentUserInfo.value);
-// };
+const getCurrentUserInfo = async () => {
+  const response = await axios.get('http://localhost:8000/api/v1/sys/users/me', {
+    headers: {
+      'Accept': 'application/json',
+    },
+  });
+  CurrentUserInfo.value = response; // 保存用户信息
+  console.log(CurrentUserInfo.value);
+};
 
 onMounted(async () => {
-  await refreshtoken();
-  // await getCurrentUserInfo(); // 调用获取用户信息的函数
-  // // 如果没有登录，绑定搜索按钮的点击事件
-  // if (!isLoggedIn.value) {
-  //   const searchButton = document.getElementById('searchButton');
-  //   if (searchButton) {
-  //     searchButton.addEventListener('click', (event) => {
-  //       event.preventDefault(); // 阻止默认行为
-  //       alert('请先登录');
-  //     });
-  //   }
-  // }
-});
-
+  // await refreshtoken();
+  await getCurrentUserInfo(); // 调用获取用户信息的函数
+  });
+const handleSearch = async () => {
+  if (!isLoggedIn.value) {
+    alert('请先登录');
+    return;
+  }
+  try {
+    const response = await axios.get('http://localhost:8000/api/v1/search/worklogs/search', {params: { q: searchQuery.value }});
+    // 假设你有一个 `logs` 状态来存储结果
+    logs.value = response.data.logs;
+  } catch (error) {
+    console.error('搜索失败:', error);
+    alert('搜索失败，请稍后再试。');
+  }
+};
 </script>
 
 <style>
