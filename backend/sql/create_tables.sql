@@ -339,3 +339,31 @@ CREATE TABLE `sys_user_social`
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_0900_ai_ci;
+
+
+CREATE TABLE workLog (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    uuid VARCHAR(32) UNIQUE NOT NULL,
+    user_uuid VARCHAR(32) NOT NULL,
+    group_uuid VARCHAR(32) NOT NULL,
+    content TEXT,
+    task TEXT,
+    solution TEXT,
+    effect TEXT,
+    create_datetime DATETIME DEFAULT CURRENT_TIMESTAMP,
+    update_datetime DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    active BOOLEAN,
+    INDEX idx_worklog_uuid (uuid),
+    INDEX idx_worklog_id (id)
+);
+
+# ALTER TABLE workLog
+# ADD COLUMN group_uuid VARCHAR(32);
+
+ALTER TABLE workLog
+ADD COLUMN content TEXT;
+
+ALTER TABLE workLog
+ADD COLUMN embedding BLOB;
+
+ALTER TABLE workLog MODIFY COLUMN user_uuid VARCHAR(36);

@@ -58,7 +58,7 @@ def register_app():
         redoc_url=settings.FASTAPI_REDOCS_URL,
         openapi_url=settings.FASTAPI_OPENAPI_URL,
         default_response_class=MsgSpecJSONResponse,
-        lifespan=register_init,
+        # lifespan=register_init,  # 暂时移除 lifespan，调试问题
     )
 
     # 日志
@@ -80,6 +80,7 @@ def register_app():
     register_exception(app)
 
     return app
+
 
 
 def register_logger() -> None:

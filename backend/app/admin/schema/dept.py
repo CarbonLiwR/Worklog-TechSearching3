@@ -9,6 +9,7 @@ from backend.common.schema import CustomEmailStr, CustomPhoneNumber, SchemaBase
 
 
 class DeptSchemaBase(SchemaBase):
+    id: int
     name: str
     parent_id: int | None = Field(default=None, description='部门父级ID')
     sort: int = Field(default=0, ge=0, description='排序')

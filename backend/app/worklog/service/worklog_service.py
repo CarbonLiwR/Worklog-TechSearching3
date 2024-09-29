@@ -4,13 +4,13 @@ from backend.app.worklog.model import WorkLog
 from datetime import datetime
 from backend.common import id_generation
 from backend.database.db_mysql import async_db_session
-
+from fastapi import Request
 
 # 创建工作日志
-async def create_worklog(worklog_data: dict) -> WorkLog:
+async def create_worklog(request: Request, worklog_data: dict) -> WorkLog:
     async with async_db_session() as db:
         uuid = f'workLog_{id_generation.generate_id()}'
-        while await get_worklog_by_uuid(db, uuid):
+        while await get_worklog_by_uuid(request.user.id):
             uuid = f'workLog_{id_generation.generate_id()}'
 
         db_worklog = WorkLog(**worklog_data, uuid=uuid, create_datetime=datetime.utcnow(), active=True)

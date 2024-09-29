@@ -13,8 +13,18 @@
                placeholder="请输入搜索内容" v-model="searchQuery" @keypress.enter="searchLogs">
         <button class="s_btn" type="button" @click="searchLogs">搜索</button>
 
-        <select id="groupSelector" style="width: 100px" v-model="selectedGroup" @change="filterByGroup">
-          <option v-for="group in groups" :key="group.uuid" :value="group.uuid">{{ group.name }}</option>
+        <select
+            id="groupSelector"
+            v-model="selectedGroup"
+            @change="updateGroupUuid"
+            style="width: 100px; font-size: 16px; margin-left: 5px"
+        >
+          <option
+              v-for="group in userStore.depts"
+              :key="group.id"
+              :value="group.id"
+          >{{ group.name }}</option
+          >
         </select>
       </div>
       <div class="table-container">
@@ -52,16 +62,26 @@
 
 <script lang="ts" setup>
 import {ref, computed, onMounted} from 'vue';
-
-const groups = ref([]);  // 组数据
-const logs = ref([]);  // 日志数据
-const user_uuid = "{{ user_uuid }}";  // 从模板中获取
+import { useUserStore } from '@/store';
+import axios from 'axios';
+const userStore = useUserStore();
+const logs = ref([]);
+const user_uuid = "{{ user_uuid }}";
 const role = "{{ role }}";  // 从模板中获取
 const selectedGroup = ref("");  // 选择的组
 
+const fetchUserInfo = async () => {
+  try {
+    await userStore.info(); // 调用 store 中的 actions
+  } catch (err) {
+    console.error('Failed to fetch user info:', err);
+  }
+};
+
 const filteredLogs = computed(() => {
+  console.log(selectedGroup.value, logs.value)
   if (selectedGroup.value === "123") {
-    return logs.value.filter(log => log.user_uuid === user_uuid);
+    return logs.value.filter(log => log.group_uuid === selectedGroup.value);
   } else if (selectedGroup.value === "") {
     return logs.value;
   } else {
@@ -96,55 +116,37 @@ function searchLogs() {
 
 // 加载组和日志数据
 async function loadInitialData() {
-  const logResponse = await fetch('http://localhost:8000/api/v1/show/worklogs/all');
-  if (logResponse.ok) {
-    const data = await logResponse.json();
-    logs.value = data;
-    console.log(logs.value); // 打印日志数据以确认
-  } else {
-    console.error('Error fetching logs:', logResponse.statusText);
+  try {
+    // 修改 URL 确保与后端一致
+    const logResponse = await axios.get('http://localhost:8000/api/v1/show/worklogs/user');
+    logs.value = logResponse;
+    console.log(logResponse);
+    if (logResponse && logResponse.status === 200) {
+      logs.value = logResponse;  // 将后端返回的数据赋给 logs
+      console.log(logs.value);  // 打印日志数据确认
+    } else {
+      console.error('Error fetching logs:', logResponse.statusText);
+    }
+  } catch (error) {
+    // 打印更详细的错误信息
+    if (error.response) {
+      // 服务器响应了错误代码
+      console.error('Error with response:', error.response.status, error.response.data);
+    } else if (error.request) {
+      // 请求发送了但没有收到响应
+      console.error('No response received:', error.request);
+    } else {
+      // 其他错误
+      console.error('Error during API call:', error.message);
+    }
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await fetchUserInfo();
   loadInitialData();
 });
 
-
-// // 获取组名
-// async function getGroupName(group_uuid) {
-//   try {
-//     const response = await fetch(`http://localhost:8000/api/groups/uuid/${group_uuid}`);
-//     const data = await response.json();
-//     return data.name;  // 假设返回的 JSON 中包含组名为 name
-//   } catch (error) {
-//     console.error('Error fetching group name:', error);
-//     return 'Unknown';
-//   }
-// }
-// 获取用户所在的组
-// async function loadUserGroups() {
-//   const response = role === 'admin'
-//     ? await fetch(`/api/groups/search_admin_users_by_uuid/${user_uuid}`)
-//     : await fetch(`/api/groups/search_user_users_by_uuid/${user_uuid}`);
-//
-//   if (!response.ok) {
-//     console.error('Failed to fetch user groups');
-//     return [];
-//   }
-//
-//   const data = await response.json();
-//   return data.group_uuids;  // 返回用户所在的组 UUID
-// }
-// 填充用户组选择器
-// async function populateUserGroups() {
-//   const userGroupUuids = await loadUserGroups();
-//
-//   for (const groupUuid of userGroupUuids) {
-//     const groupName = await getGroupName(groupUuid);
-//     groups.value.push({ uuid: groupUuid, name: groupName });  // 将组添加到组列表中
-//   }
-// }
 
 </script>
 

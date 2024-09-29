@@ -6,12 +6,13 @@ import httpx
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from ....service import worklog_service
-from ....service import user_service
 from ....schema.worklog_schemas import WorkLogCreate, WorkLogUpdate, WorkLogResponse, WorkLogSubmit
 from fastapi.templating import Jinja2Templates
 from ....service.search import query_embedding
 from ....service.search import Embeds
 from fastapi.responses import JSONResponse
+from ....service.utils import initialize_model
+
 templates = Jinja2Templates(directory="templates")
 
 router = APIRouter()

@@ -13,7 +13,7 @@ async def load_embedding_models():
     """加载BERT模型和分词器"""
     base_path = os.path.dirname(__file__)  # 获取当前文件的目录
     path = os.path.join(base_path, 'embed_model')
-
+    path = "D:/workplace/tech_find_human/embed_model/"
     # 定义文件路径
     model_path = os.path.join(path, 'pytorch_model.bin')
     config_path = os.path.join(path, 'config.json')

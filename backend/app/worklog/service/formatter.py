@@ -26,6 +26,7 @@ def apido(text: str):
             response = requests.post(url, headers=headers, data=json.dumps(data))
             response.raise_for_status()  # Raise an HTTPError for bad responses (4xx and 5xx)
             response_data = response.json()
+
             messages = response_data.get("messages", [])
             for message in messages:
                 if message.get("role") == "assistant" and message.get("type") == "answer":

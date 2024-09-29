@@ -327,8 +327,4 @@ class CRUDUser(CRUDPlus[User]):
         user = await db.execute(stmt.where(*filters))
         return user.scalars().first()
 
-
-
-
-
 user_dao: CRUDUser = CRUDUser(User)
