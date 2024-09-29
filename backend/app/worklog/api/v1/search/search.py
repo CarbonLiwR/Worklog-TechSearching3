@@ -2,6 +2,7 @@ import os
 import requests
 import asyncio
 import json
+import httpx
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from ....service import worklog_service
@@ -23,15 +24,23 @@ async def search_query(request: Request):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No worklogs found")
 
     embeds = []
-    for result in results:
-        log_data = WorkLogResponse.from_orm(result).dict()
-        user = await user_service.get_user_by_uuid(result.user_uuid)
-        log_data['user_name'] = user.name if user else "Unknown User"
-        if isinstance(log_data.get('create_datetime'), datetime):
-            log_data['create_datetime'] = log_data['create_datetime'].isoformat()
-        if isinstance(log_data.get('update_datetime'), datetime):
-            log_data['update_datetime'] = log_data['update_datetime'].isoformat()
-        embeds.append(Embeds(log_data, result.embedding, 0))
+    async with httpx.AsyncClient() as client:
+        for result in results:
+            log_data = WorkLogResponse.from_orm(result).dict()
+            user_uuid = log_data['user_uuid']
+            response = await client.get(f'http://localhost:8000/api/v1/sys/users/{user_uuid}')
+            if response.status_code == 200:
+                user_data = response.json()
+                log_data['user_name'] = user_data['data']['name']  # 假设返回的数据结构
+            else:
+                log_data['user_name'] = "Unknown User"
+
+            if isinstance(log_data.get('create_datetime'), datetime):
+                log_data['create_datetime'] = log_data['create_datetime'].isoformat()
+            if isinstance(log_data.get('update_datetime'), datetime):
+                log_data['update_datetime'] = log_data['update_datetime'].isoformat()
+
+            embeds.append(Embeds(log_data, result.embedding, 0))
 
     query = request.query_params.get('q')
     if not query:

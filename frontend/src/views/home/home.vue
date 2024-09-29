@@ -17,7 +17,7 @@ const particleSpeed = 0.25;
 const particleSize = 2;
 const maxDistance = 100;
 const lightningColor = "#fff";
-
+let refreshIntervalId;
 let animationFrameId;
 
 onMounted(async () => {

@@ -30,6 +30,16 @@ class CRUDUser(CRUDPlus[User]):
         """
         return await self.select_model(db, user_id)
 
+    async def get_by_uuid(self, db: AsyncSession, user_uuid: str) -> User | None:
+        """
+        根据 UUID 获取用户
+
+        :param db:
+        :param user_uuid:
+        :return:
+        """
+        return await self.select_model_by_column(db, uuid=user_uuid)
+
     async def get_by_username(self, db: AsyncSession, username: str) -> User | None:
         """
         通过 username 获取用户
@@ -309,6 +319,9 @@ class CRUDUser(CRUDPlus[User]):
             filters.append(self.model.username == username)
         user = await db.execute(stmt.where(*filters))
         return user.scalars().first()
+
+
+
 
 
 user_dao: CRUDUser = CRUDUser(User)

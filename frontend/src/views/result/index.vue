@@ -1,6 +1,5 @@
 <template>
   <div class="html">
-
     <div class="body">
       <a href="/" class="back-button">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -27,8 +26,11 @@
         </div>
         <div class="right-container">
           <h1>AI问答</h1>
-          <div class="chat-container" ref="chatContainer"></div>
-
+          <div class="chat-container" ref="chatContainer">
+            <div v-for="(msg, index) in messages" :key="index" :class="`chat-message ${msg.sender}`">
+              {{ msg.text }}
+            </div>
+          </div>
           <div class="chat-input">
             <textarea v-model="message" @keydown.enter.prevent="sendMessage"></textarea>
             <button @click="sendMessage">发送</button>
@@ -43,14 +45,15 @@
 import { ref, onMounted } from 'vue';
 
 const props = defineProps<{
-  logs?: { user_name: string; create_datetime: string; content: string }[]; // 可选属性
-  query?: string; // 可选属性
+  logs?: { user_name: string; create_datetime: string; content: string }[];
+  query?: string;
 }>();
 
-const logs = props.logs || []; // 默认为空数组
-const query = props.query || ''; // 默认为空字符串
+const logs = props.logs || [];
+const query = props.query || '';
 
 const message = ref('');
+const messages = ref<{ sender: 'user' | 'bot'; text: string }[]>([]);
 const loadingInterval = ref<ReturnType<typeof setInterval> | null>(null);
 const chatContainer = ref<HTMLDivElement | null>(null);
 
@@ -65,11 +68,12 @@ async function sendMessage() {
   const trimmedMessage = message.value.trim();
   if (!trimmedMessage) return;
 
-  addMessage('user', trimmedMessage);
-  message.value = '';
+  messages.value.push({ sender: 'user', text: trimmedMessage });
+  const loadingMessage = { sender: 'bot', text: '正在思考' };
+  messages.value.push(loadingMessage);
 
-  const loadingMessage = addMessage('bot', '正在思考');
-  startLoadingAnimation(loadingMessage);
+  message.value = '';
+  scrollToBottom();
 
   try {
     const response = await fetch('http://localhost:8000/api/v1/search/api/ask', {
@@ -78,36 +82,19 @@ async function sendMessage() {
       body: JSON.stringify({ question: trimmedMessage, top_logs: props.logs }),
     });
     const data = await response.json();
-    loadingMessage.innerText = data.answer || '这是AI的回答。';
+    console.log('Response:', data);
+    loadingMessage.text = data.answer || '这是AI的回答。';
   } catch (error) {
     console.error('Error:', error);
-    loadingMessage.innerText = 'AI回答失败，请稍后再试。';
+    loadingMessage.text = 'AI回答失败，请稍后再试。';
   } finally {
-    stopLoadingAnimation();
+    scrollToBottom();
   }
 }
 
-function addMessage(sender: 'user' | 'bot', text: string) {
-  if (!chatContainer.value) return;
-  const messageElement = document.createElement('div');
-  messageElement.className = `chat-message ${sender}`;
-  messageElement.innerText = text;
-  chatContainer.value.appendChild(messageElement);
-  chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
-  return messageElement;
-}
-
-function startLoadingAnimation(messageElement: HTMLElement) {
-  let dots = 0;
-  loadingInterval.value = setInterval(() => {
-    dots = (dots + 1) % 4;
-    messageElement.innerText = '正在思考' + '.'.repeat(dots);
-  }, 500);
-}
-
-function stopLoadingAnimation() {
-  if (loadingInterval.value) {
-    clearInterval(loadingInterval.value);
+function scrollToBottom() {
+  if (chatContainer.value) {
+    chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
   }
 }
 
@@ -118,6 +105,11 @@ onMounted(() => {
   }
 });
 </script>
+
+<style scoped>
+/* 保持原有的样式 */
+</style>
+
 
 <style scoped>
 .html, .body {

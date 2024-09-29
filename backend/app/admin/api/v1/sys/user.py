@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from typing import Annotated
-
 from fastapi import APIRouter, Depends, Path, Query, Request
 
 from backend.app.admin.schema.user import (
@@ -53,8 +52,14 @@ async def get_current_user(request: Request) -> ResponseModel:
     data = GetCurrentUserInfoDetail(**request.user.model_dump())
     return response_base.success(data=data)
 
+@router.get('/{user_uuid}', summary='查看用户信息(uuid)', dependencies=[DependsJwtAuth])
+async def get_user_by_uuid(user_uuid: Annotated[str, Path(...)]) -> ResponseModel:
+    current_user = await user_service.get_userinfo_by_uuid(user_uuid=user_uuid)
+    data = GetUserInfoListDetails(**select_as_dict(current_user))
+    return response_base.success(data=data)
 
-@router.get('/{username}', summary='查看用户信息', dependencies=[DependsJwtAuth])
+
+@router.get('/{username}', summary='查看用户信息(name)', dependencies=[DependsJwtAuth])
 async def get_user(username: Annotated[str, Path(...)]) -> ResponseModel:
     current_user = await user_service.get_userinfo(username=username)
     data = GetUserInfoListDetails(**select_as_dict(current_user))

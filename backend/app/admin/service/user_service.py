@@ -89,6 +89,14 @@ class UserService:
             return count
 
     @staticmethod
+    async def get_userinfo_by_uuid(*, user_uuid: str) -> User:
+        async with async_db_session() as db:
+            user = await user_dao.get_by_uuid(db, user_uuid=user_uuid)  # 假设你有这个方法
+            if not user:
+                raise errors.NotFoundError(msg='用户不存在')
+            return user
+
+    @staticmethod
     async def get_userinfo(*, username: str) -> User:
         async with async_db_session() as db:
             user = await user_dao.get_with_relation(db, username=username)

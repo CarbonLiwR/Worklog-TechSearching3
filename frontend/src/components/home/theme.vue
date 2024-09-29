@@ -67,9 +67,7 @@ const handleSearch = async () => {
     return;
   }
   try {
-    const response = await axios.get('worklogs/search', {
-      params: { q: searchQuery.value }
-    });
+    const response = await axios.get('http://localhost:8000/api/v1/search/worklogs/search', {params: { q: searchQuery.value }});
     // 假设你有一个 `logs` 状态来存储结果
     logs.value = response.data.logs;
   } catch (error) {

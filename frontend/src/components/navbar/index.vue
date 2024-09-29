@@ -170,6 +170,7 @@ import Menu from '@/components/menu/index.vue';
 import Back from "@/components/back.vue";
 import axios from "axios";
 import { useRouter } from 'vue-router';
+import router from "@/router";
 
 const appStore = useAppStore();
 const userStore = useUserStore();
@@ -225,16 +226,7 @@ const CurrentUserInfo = ref(null); // 使用 ref 保存用户信息
 
 onMounted(async () => {
   await getCurrentUserInfo(); // 调用获取用户信息的函数
-  // 如果没有登录，绑定搜索按钮的点击事件
-  if (!isLoggedIn.value) {
-    const searchButton = document.getElementById('searchButton');
-    if (searchButton) {
-      searchButton.addEventListener('click', (event) => {
-        event.preventDefault(); // 阻止默认行为
-        alert('请先登录');
-      });
-    }
-  }});
+  });
 
 const getCurrentUserInfo = async () => {
   const response = await axios.get('http://localhost:8000/api/v1/sys/users/me', {

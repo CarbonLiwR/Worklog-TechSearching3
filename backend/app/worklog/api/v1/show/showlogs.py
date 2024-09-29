@@ -116,4 +116,5 @@ async def edit_worklog_by_uuid(worklog_uuid: str, update_data: WorkLogUpdate, db
 # Get All WorkLogs
 @router.get("/worklogs/all", response_model=list[WorkLogResponse])
 async def get_all_worklogs():
-    return await worklog_service.get_all_worklogs()
+    work_log = await worklog_service.get_all_worklogs()
+    return work_log
