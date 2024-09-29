@@ -1,74 +1,87 @@
-import {defineStore} from 'pinia';
-import {getUserInfo} from '@/api/user';
-import {clearToken, setToken} from '@/utils/auth';
-import {removeRouteListener} from '@/utils/route-listener';
-import {UserState} from '@/store/modules/user/types';
+import { defineStore } from 'pinia';
+import { getUserInfo } from '@/api/user';
+import { clearToken, setToken } from '@/utils/auth';
+import { removeRouteListener } from '@/utils/route-listener';
+import { UserState } from '@/store/modules/user/types';
 import {
     CaptchaRes,
     getCaptcha,
     login as userLogin,
     LoginData,
-    logout as userLogout, registerUser,
+    logout as userLogout,
+    registerUser,
 } from '@/api/auth';
 import useAppStore from '../app';
 
 const useUserStore = defineStore('user', {
     state: (): UserState => ({
-        username: undefined,
-        nickname: undefined,
-        avatar: undefined,
+        username: '',
+        nickname: '',
+        avatar: '',
         is_superuser: false,
         is_staff: false,
         roles: '',
+        depts: [], // 确保 depts 是默认空数组
     }),
 
     getters: {
         userInfo(state: UserState): UserState {
-            return {...state};
+            return { ...state };
         },
     },
 
     actions: {
-        // switchRoles() {
-        // return new Promise((resolve) => {
-        // this.role = this.role === 'user' ? 'admin' : 'user';
-        // resolve(this.role);
-        // });
-        // },
-
-        // Set user's information
+        // 设置用户信息
         setInfo(partial: Partial<UserState>) {
             this.$patch(partial);
         },
 
-        // Reset user's information
+        // 重置用户信息
         resetInfo() {
             this.$reset();
         },
 
-        // Get user's information
+        // 获取用户信息
         async info() {
-            const res = await getUserInfo();
-            this.setInfo(res);
+            try {
+                const res = await getUserInfo();
+                // 确保 depts 是一个数组
+                if (Array.isArray(res.depts)) {
+                    console.log(res.depts);
+                } else {
+                    console.error('Depts is not an array:', res.depts);
+                }
+
+                // 更新用户信息，确保 depts 正确更新
+                this.setInfo({
+                    ...res,
+                    depts: Array.isArray(res.depts) ? res.depts : [], // 确保 depts 为数组
+                });
+            } catch (error) {
+                console.error('Error fetching user info:', error);
+                throw error;
+            }
         },
 
-        // Get captcha
+        // 获取验证码
         async captcha() {
             const res: CaptchaRes = await getCaptcha();
             return res.image;
         },
 
-        // Login
+        // 登录
         async login(loginForm: LoginData) {
             try {
                 const res = await userLogin(loginForm);
+                console.log(res);
                 setToken(res.access_token);
             } catch (err) {
                 clearToken();
                 throw err;
             }
         },
-        // Register
+
+        // 注册
         async register(registerForm: RegisterData) {
             try {
                 const res = await registerUser(registerForm);
@@ -78,7 +91,7 @@ const useUserStore = defineStore('user', {
             }
         },
 
-        // OAuth2 login
+        // OAuth2 登录
         async oauth2Login() {
             const params = new URLSearchParams(window.location.search);
             const token = params.get('access_token');
@@ -89,7 +102,7 @@ const useUserStore = defineStore('user', {
             return false;
         },
 
-        // Logout
+        // 登出回调
         logoutCallBack() {
             const appStore = useAppStore();
             this.resetInfo();
@@ -98,6 +111,7 @@ const useUserStore = defineStore('user', {
             appStore.clearServerMenu();
         },
 
+        // 登出
         async logout() {
             try {
                 await userLogout();

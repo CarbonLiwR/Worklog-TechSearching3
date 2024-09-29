@@ -19,12 +19,11 @@ export interface SysUserNoRelationRes {
   is_multi_login: boolean;
   join_time: string;
   last_login_time: string;
-  dept_id?: number;
-  dept?: SysDeptRes;
 }
 
 export interface SysUserRes extends SysUserNoRelationRes {
   roles: SysRoleRes[];
+  depts: SysDeptRes[];
 }
 
 export interface SysUserParams {
@@ -63,6 +62,7 @@ export interface SysUserAddReq {
   password: string;
   email: string;
   roles: number[];
+  depts: SysDeptRes[];
 }
 
 export function getUserInfo(): Promise<UserState> {

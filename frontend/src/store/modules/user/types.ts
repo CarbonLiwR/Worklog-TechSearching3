@@ -1,3 +1,5 @@
+import {SysDeptRes} from "@/api/dept";
+
 export interface UserState {
   username?: string;
   nickname?: string;
@@ -5,4 +7,5 @@ export interface UserState {
   is_superuser: boolean;
   is_staff: boolean;
   roles: string;
+  depts: SysDeptRes[];
 }

@@ -4,7 +4,7 @@ from typing import Union
 
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
+from backend.app.admin.model.sys_user_dept import sys_user_dept
 from backend.common.model import Base, id_key
 
 
@@ -29,4 +29,4 @@ class Dept(Base):
     parent: Mapped[Union['Dept', None]] = relationship(init=False, back_populates='children', remote_side=[id])
     children: Mapped[list['Dept'] | None] = relationship(init=False, back_populates='parent')
     # 部门用户一对多
-    users: Mapped[list['User']] = relationship(init=False, back_populates='dept')  # noqa: F821
+    users: Mapped[list['User']] = relationship(init=False, secondary=sys_user_dept, back_populates='depts')  # noqa: F821

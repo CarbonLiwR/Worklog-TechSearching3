@@ -3,7 +3,7 @@
 from fast_captcha import text_captcha
 from sqlalchemy import and_, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, joinedload
 from sqlalchemy.sql import Select
 from sqlalchemy_crud_plus import CRUDPlus
 
@@ -34,11 +34,17 @@ class CRUDUser(CRUDPlus[User]):
         """
         通过 username 获取用户
 
-        :param db:
-        :param username:
-        :return:
+        :param db: 异步数据库会话
+        :param username: 用户名
+        :return: 返回找到的用户，或者 None
         """
-        return await self.select_model_by_column(db, username=username)
+        stmt = select(User).options(
+            joinedload(User.depts),
+            joinedload(User.roles)
+        ).where(User.username == username)
+
+        result = await db.execute(stmt)
+        return result.scalars().first()
 
     async def get_by_nickname(self, db: AsyncSession, nickname: str) -> User | None:
         """
@@ -183,7 +189,7 @@ class CRUDUser(CRUDPlus[User]):
         """
         stmt = (
             select(self.model)
-            .options(selectinload(self.model.dept))
+            .options(selectinload(self.model.depts))
             .options(selectinload(self.model.roles).selectinload(Role.menus))
             .order_by(desc(self.model.join_time))
         )
@@ -299,7 +305,7 @@ class CRUDUser(CRUDPlus[User]):
         """
         stmt = (
             select(self.model)
-            .options(selectinload(self.model.dept))
+            .options(selectinload(self.model.depts))
             .options(selectinload(self.model.roles).joinedload(Role.menus))
         )
         filters = []

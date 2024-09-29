@@ -39,7 +39,7 @@ const router = createRouter({
             },
             {
               path: '/worklogs',
-              name: 'worklogs',
+              name: 'work_logs',
                 children: [
                     {
                         path: 'add',
@@ -51,7 +51,10 @@ const router = createRouter({
                         name: 'showlog',
                         component: () => import('@/views/worklog/showlog.vue'),
                     }
-                    ]
+                ],
+                meta: {
+                    requiresAuth: false,
+                },
             },
 
             ...appRoutes,

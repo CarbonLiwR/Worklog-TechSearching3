@@ -29,19 +29,23 @@
       <div>提交日志时发生错误，请稍后重试。</div>
     </div>
 
-
-
     <div class="container">
       <div class="toolbar">
         <label>姓名：</label>
-        <input type="text" id="nameInput" v-model="username" readonly style="width: 130px; border: none; border-bottom: 1px solid #4285f4; font-size: 16px;">
+        <input
+            v-model="userStore.nickname"
+            type="text"
+            id="nameInput"
+            readonly
+            style="width: 130px; border: none; border-bottom: 1px solid #4285f4; font-size: 16px;"
+        >
 
         <label>时间：</label>
         <input type="date" id="datePicker" v-model="currentDate" readonly style="width: 130px; border: none; border-bottom: 1px solid #4285f4; font-size: 16px;">
 
         <label for="groupSelector">选择组:</label>
         <select id="groupSelector" v-model="selectedGroup" @change="fetchGroupDetails" style="width: 100px; font-size: 16px; margin-left: 5px;">
-          <option v-for="group in groups" :key="group.id" :value="group.id">{{ group.name }}</option>
+          <option v-for="group in userStore.depts" :key="group.id" :value="group.id">{{ group.name }}</option>
         </select>
       </div>
 
@@ -63,84 +67,47 @@
       <div id="modalBody" class="modal-body">{{ modalContent }}</div>
     </div>
 
-    <div v-if="confirmationVisible" id="confirmationDialog" class="custom-dialog">
-      <p>尚有需要添加的内容，是否继续提交？</p>
-      <div class="dialog-buttons">
-        <button @click="confirmSubmit">确定</button>
-        <button @click="cancelSubmit">取消</button>
-      </div>
-    </div>
-
-    <div v-if="refuseVisible" id="refuse" class="custom-dialog">
-      <p>您的工作日志未达到80%符合指数，请继续修改</p>
-      <div class="dialog-buttons">
-        <button @click="continueEditing">继续修改</button>
-      </div>
-    </div>
-
-    <div v-if="standardVisible" id="m1odal" class="modal" style="left: 15%; top: 40%;">
+    <div v-if="standardVisible" id="modal" class="modal" style="left: 15%; top: 40%;">
       <div class="modal-header">
         <h3>工作日志撰写标准</h3>
         <button @click="closeStandard" style="border: 1px solid #4285f4;">X</button>
       </div>
-      <div id="m1odalBody" class="modal-body">{{ con1tent }}</div>
+      <div id="modalBody" class="modal-body">{{ content }}</div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue';
-
-const groups = ref([]);
+import { useUserStore } from '@/store';
+const userStore = useUserStore();
 const selectedGroup = ref('');
-const name = ref('');
-const date = ref(new Date().toISOString().split('T')[0]);
+const currentDate = ref(new Date().toISOString().split('T')[0]);
 const log = ref('');
 const loading = ref(false);
 const alertType = ref('');
 const modalVisible = ref(false);
 const modalContent = ref('');
 const standardVisible = ref(false);
-const con1tent = ref('');
-let currentgroupuuid = '';
+const content = ref('');
+let currentGroupUuid = '';
 
-onMounted(async () => {
-  await fetchGroups();
-  dispatchChangeEvent(); // 默认加载第一个组的信息
-});
-
-async function fetchGroups() {
-  const response = await fetch('/api/groups');
-  const data = await response.json();
-  groups.value = data.groups;
-}
-
-async function fetchGroupDetails() {
-  const response = await fetch(`/api/groups/${selectedGroup.value}`);
-  const data = await response.json();
-  con1tent.value = data.worklog_standard;
-  currentgroupuuid = data.uuid;
-
-  const users = await Promise.all([
-    ...data.admin_users.map(uuid => fetch(`/api/users/${uuid}`).then(res => res.json())),
-    ...data.user_users.map(uuid => fetch(`/api/users/${uuid}`).then(res => res.json()))
-  ]);
-  // 处理用户数据...
-}
-
-function dispatchChangeEvent() {
-  if (groups.value.length > 0) {
-    selectedGroup.value = groups.value[0].id;
-    fetchGroupDetails();
+// 获取用户信息
+const fetchUserInfo = async () => {
+  try {
+    await userStore.info(); // 调用 store 中的 actions
+  } catch (err) {
+    console.error('Failed to fetch user info:', err);
   }
-}
+};
 
-async function submitLog() {
+// 提交日志
+const submitLog = async () => {
   const canSubmit = await saveLog();
   if (!canSubmit) return;
 
   loading.value = true;
-  const logData = `姓名：${name.value}\n时间：${date.value}\n工作日志：${log.value}`;
+  const logData = `姓名：${userStore.nickname}\n时间：${currentDate.value}\n工作日志：${log.value}`;
 
   try {
     const response = await fetch('/worklogs/submit', {
@@ -149,7 +116,7 @@ async function submitLog() {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
       },
-      body: JSON.stringify({ text: logData, group_uuid: currentgroupuuid })
+      body: JSON.stringify({ text: logData, group_uuid: currentGroupUuid })
     });
 
     const responseData = await response.json();
@@ -160,32 +127,32 @@ async function submitLog() {
   } finally {
     loading.value = false;
   }
-}
+};
 
-async function saveLog() {
-  // 验证逻辑...
-  modalContent.value = '保存成功!'; // 示例
+// 保存日志
+const saveLog = async () => {
+  modalContent.value = '保存成功!';
   modalVisible.value = true;
-  return true; // 假设总是返回true
-}
+  return true;
+};
 
-function closeModal() {
+// 关闭模态框
+const closeModal = () => {
   modalVisible.value = false;
-}
+};
 
-function closeStandard() {
+// 关闭标准弹窗
+const closeStandard = () => {
   standardVisible.value = false;
-}
+};
 
-function handleMouseMove(event) {
-  const { clientX } = event;
-  if (clientX > window.innerWidth - 30) {
-    standardVisible.value = true; // 示例，打开标准弹窗
-  } else if (clientX < window.innerWidth - 100) {
-    standardVisible.value = false; // 示例，关闭标准弹窗
-  }
-}
+// 获取用户和组信息
+onMounted(async () => {
+  await fetchUserInfo();
+  await fetchGroups();
+});
 </script>
+
 
 <style>
 * {
