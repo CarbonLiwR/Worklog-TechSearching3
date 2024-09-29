@@ -79,17 +79,17 @@ function formatLogContent(content) {
     .replace("解决效果：", "<br/><strong>解决效果：</strong>");
 }
 
-// 获取组名
-async function getGroupName(group_uuid) {
-  try {
-    const response = await fetch(`/api/groups/uuid/${group_uuid}`);
-    const data = await response.json();
-    return data.name;  // 假设返回的 JSON 中包含组名为 name
-  } catch (error) {
-    console.error('Error fetching group name:', error);
-    return 'Unknown';
-  }
-}
+// // 获取组名
+// async function getGroupName(group_uuid) {
+//   try {
+//     const response = await fetch(`http://localhost:8000/api/groups/uuid/${group_uuid}`);
+//     const data = await response.json();
+//     return data.name;  // 假设返回的 JSON 中包含组名为 name
+//   } catch (error) {
+//     console.error('Error fetching group name:', error);
+//     return 'Unknown';
+//   }
+// }
 
 // 渲染日志
 async function renderLogs() {
@@ -108,39 +108,39 @@ function searchLogs() {
 // 加载组和日志数据
 async function loadInitialData() {
   // 获取 groups 和 logs 数据
-  const groupResponse = await fetch('/api/groups');
-  groups.value = await groupResponse.json();
+  // const groupResponse = await fetch('/api/groups');
+  // groups.value = await groupResponse.json();
 
-  const logResponse = await fetch('/api/logs');
+  const logResponse = await fetch('http://localhost:8000/api/v1/show/worklogs/all');
   logs.value = await logResponse.json();
 
   populateUserGroups();  // 填充用户所在的组
 }
 
 // 获取用户所在的组
-async function loadUserGroups() {
-  const response = role === 'admin'
-    ? await fetch(`/api/groups/search_admin_users_by_uuid/${user_uuid}`)
-    : await fetch(`/api/groups/search_user_users_by_uuid/${user_uuid}`);
-
-  if (!response.ok) {
-    console.error('Failed to fetch user groups');
-    return [];
-  }
-
-  const data = await response.json();
-  return data.group_uuids;  // 返回用户所在的组 UUID
-}
+// async function loadUserGroups() {
+//   const response = role === 'admin'
+//     ? await fetch(`/api/groups/search_admin_users_by_uuid/${user_uuid}`)
+//     : await fetch(`/api/groups/search_user_users_by_uuid/${user_uuid}`);
+//
+//   if (!response.ok) {
+//     console.error('Failed to fetch user groups');
+//     return [];
+//   }
+//
+//   const data = await response.json();
+//   return data.group_uuids;  // 返回用户所在的组 UUID
+// }
 
 // 填充用户组选择器
-async function populateUserGroups() {
-  const userGroupUuids = await loadUserGroups();
-
-  for (const groupUuid of userGroupUuids) {
-    const groupName = await getGroupName(groupUuid);
-    groups.value.push({ uuid: groupUuid, name: groupName });  // 将组添加到组列表中
-  }
-}
+// async function populateUserGroups() {
+//   const userGroupUuids = await loadUserGroups();
+//
+//   for (const groupUuid of userGroupUuids) {
+//     const groupName = await getGroupName(groupUuid);
+//     groups.value.push({ uuid: groupUuid, name: groupName });  // 将组添加到组列表中
+//   }
+// }
 
 onMounted(() => {
   loadInitialData();

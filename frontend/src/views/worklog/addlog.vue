@@ -54,7 +54,6 @@
 
       <div class="butttton">
         <button @click="submitLog" class="submitbutton">提交</button>
-        <button @click="saveLog">保存</button>
         <button @click="clearLog">清除</button>
         <button @click="showStandard">查看标准</button>
       </div>
@@ -160,7 +159,7 @@ function dispatchChangeEvent() {
 }
 
 async function checkText(text) {
-  const response = await fetch('/check_text', {
+  const response = await fetch('http://localhost:8000/api/v1/worklogs/check_text', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -250,6 +249,7 @@ async function submitLog() {
 }
 
 async function saveLog() {
+  const saveButton = document.getElementById('saveButton'); // 获取保存按钮
   const name = nameInput.value;
   const date = datePicker.value;
   const log = textArea.value;
@@ -285,11 +285,11 @@ async function saveLog() {
     console.error('保存日志时发生错误:', error);
     return false;
   } finally {
-    saveButton.innerHTML = '提交';
+    saveButton.innerHTML = '保存';
     return true;
   }
 }
-
+//显示日志和标准的模态框
 function showModal(content) {
   const modal = document.getElementById('modal');
   const modalBody = document.getElementById('modalBody');
@@ -336,19 +336,28 @@ function selectModal(modalId) {
   if (selectedModal.value === modalId) return;
 
   // 清除之前选中的模态框
-  selectedModal.value = modalId;
+  if (selectedModal.value) {
+    const previousModal = document.getElementById(selectedModal.value);
+    if (previousModal) {
+      previousModal.classList.remove('selected'); // 移除选中状态
+    }
+  }
 
-  // 处理拖动逻辑
+  // 设置新的选中状态
+  selectedModal.value = modalId;
   const modalElement = document.getElementById(modalId);
+  if (modalElement) {
+    modalElement.classList.add('selected'); // 添加选中状态
+  }
   dragElement(modalElement);
 }
 
 function dragElement(element) {
+  if (!element) return; // 检查 element 是否为 null
   let pos1 = 0, pos2 = 0;
 
   element.onpointerdown = function (e) {
     if (selectedModal.value !== element.id) return; // 如果不是选中的模态框，不处理
-
     e.preventDefault();
     pos1 = e.clientX;
     pos2 = e.clientY;
@@ -375,8 +384,15 @@ function dragElement(element) {
 
 // 当点击框外部或另一个框时，重置选中状态
 document.addEventListener('click', (event) => {
-  if (!event.target.closest('.modal')) {
-    selectedModal.value = null;
+  const targetModal = event.target.closest('.modal');
+  if (!targetModal) {
+    if (selectedModal.value) {
+      const previousModal = document.getElementById(selectedModal.value);
+      if (previousModal) {
+        previousModal.classList.remove('selected'); // 移除选中状态
+      }
+    }
+    selectedModal.value = null; // 重置选中状态
   }
 });
 
@@ -391,7 +407,6 @@ function closeStandard() {
 
 function showStandard() {
   standardVisible.value = true; // 显示模态框
-  modalVisible.value = true;
   con1tent.value = '这是标准。'; // 设置内容
 }
 
@@ -461,6 +476,8 @@ body {
 
 .toolbar label {
   font-size: 16px;
+  margin-right: 20px;
+  margin-left: 5px;
 }
 
 .toolbar input, .toolbar label {

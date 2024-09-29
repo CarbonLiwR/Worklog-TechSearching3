@@ -12,7 +12,7 @@
             :heading="5"
             :style="{ margin: 0, fontSize: '18px' }"
         >
-          <el-button style="width:130px;background: none;color:royalblue;margin-left: 0;padding-left: 0;text-align: left;" @click="$router.push('/')">&lt; 技术寻人</el-button>
+          <el-button style="border:none;width:130px;background: none;color:royalblue;margin-left: 0;padding-left: 0;text-align: left;" @click="$router.push('/')">&lt; 技术寻人</el-button>
         </a-typography-title>
         <icon-menu-fold
             v-if="!topMenu && appStore.device === 'mobile'"
@@ -160,7 +160,7 @@
 </template>
 
 <script lang="ts" setup>
-import {computed, inject, ref} from 'vue';
+import {computed, inject, onMounted, ref} from 'vue';
 import {useDark, useFullscreen, useToggle} from '@vueuse/core';
 import {useAppStore, useUserStore} from '@/store';
 import {LOCALE_OPTIONS} from '@/locale';
@@ -168,10 +168,13 @@ import useLocale from '@/hooks/locale';
 import useUser from '@/hooks/user';
 import Menu from '@/components/menu/index.vue';
 import Back from "@/components/back.vue";
+import axios from "axios";
+import { useRouter } from 'vue-router';
 
 const appStore = useAppStore();
 const userStore = useUserStore();
 const {logout} = useUser();
+
 const {changeLocale, currentLocale} = useLocale();
 const {isFullscreen, toggle: toggleFullScreen} = useFullscreen();
 const locales = [...LOCALE_OPTIONS];
@@ -217,6 +220,31 @@ const switchRoles = async () => {
   // Message.success(res as string);
 };
 const toggleDrawerMenu = inject('toggleDrawerMenu') as () => void;
+
+const CurrentUserInfo = ref(null); // 使用 ref 保存用户信息
+
+onMounted(async () => {
+  await getCurrentUserInfo(); // 调用获取用户信息的函数
+  // 如果没有登录，绑定搜索按钮的点击事件
+  if (!isLoggedIn.value) {
+    const searchButton = document.getElementById('searchButton');
+    if (searchButton) {
+      searchButton.addEventListener('click', (event) => {
+        event.preventDefault(); // 阻止默认行为
+        alert('请先登录');
+      });
+    }
+  }});
+
+const getCurrentUserInfo = async () => {
+  const response = await axios.get('http://localhost:8000/api/v1/sys/users/me', {
+    headers: {
+      'Accept': 'application/json',
+    },
+  });
+  CurrentUserInfo.value = response; // 保存用户信息
+  console.log(CurrentUserInfo.value);
+};
 </script>
 
 <style lang="less" scoped>

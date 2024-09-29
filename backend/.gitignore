@@ -10,3 +10,4 @@ static/media/
 .pdm-python
 celerybeat-schedule.*
 /log/
+/app/worklog/service/embed_model/

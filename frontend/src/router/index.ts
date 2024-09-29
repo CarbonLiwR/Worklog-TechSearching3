@@ -38,8 +38,8 @@ const router = createRouter({
 
             },
             {
-              path: '/worklogs',
-              name: 'worklogs',
+                path: '/worklogs',
+                name: 'work_logs',
                 children: [
                     {
                         path: 'add',
@@ -51,7 +51,12 @@ const router = createRouter({
                         name: 'showlog',
                         component: () => import('@/views/worklog/showlog.vue'),
                     }
-                    ]
+                ]
+            },
+            {
+                path: '/result',
+                name: 'results',
+                component: () => import('@/views/result/index.vue'),
             },
 
             ...appRoutes,
