@@ -85,9 +85,11 @@ class GetCurrentUserInfoDetail(GetUserInfoListDetails):
     def handel(self) -> Self:
         """处理部门和角色"""
         depts = self.depts
+
         # if depts:
         #     self.depts = [dept.name for dept in depts]  # type: ignore
         roles = self.roles
+
         if roles:
             self.roles = [role.name for role in roles]  # type: ignore
         return self

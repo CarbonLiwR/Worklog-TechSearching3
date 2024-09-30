@@ -106,6 +106,7 @@ class AuthService:
                     httponly=True,
                 )
                 await db.refresh(current_user)
+
                 data = GetLoginToken(
                     access_token=access_token.access_token,
                     access_token_expire_time=access_token.access_token_expire_time,

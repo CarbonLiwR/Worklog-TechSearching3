@@ -54,7 +54,6 @@ const getCurrentUserInfo = async () => {
     },
   });
   CurrentUserInfo.value = response; // 保存用户信息
-  console.log(CurrentUserInfo.value);
 };
 
 onMounted(async () => {
@@ -67,9 +66,11 @@ const handleSearch = async () => {
     return;
   }
   try {
-    const response = await axios.get('http://localhost:8000/api/v1/search/worklogs/search', {params: { q: searchQuery.value }});
-    // 假设你有一个 `logs` 状态来存储结果
-    logs.value = response.data.logs;
+    window.location.href = `/result?q=${encodeURIComponent(searchQuery.value)}`;
+
+    // const response = await axios.get('http://localhost:8000/api/v1/search/worklogs/search', {params: { q: searchQuery.value }});
+    // // 假设你有一个 `logs` 状态来存储结果
+    // logs.value = response.data.logs;
   } catch (error) {
     console.error('搜索失败:', error);
     alert('搜索失败，请稍后再试。');

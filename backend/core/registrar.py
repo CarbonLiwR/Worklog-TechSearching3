@@ -9,6 +9,7 @@ from fastapi_pagination import add_pagination
 from starlette.middleware.authentication import AuthenticationMiddleware
 
 from backend.app.router import route
+from backend.app.worklog.service.utils import initialize_model
 from backend.common.exception.exception_handler import register_exception
 from backend.common.log import set_customize_logfile, setup_logging
 from backend.core.conf import settings
@@ -32,6 +33,9 @@ async def register_init(app: FastAPI):
     :return:
     """
     # 创建数据库表
+    print("Initializing model on startup...\n")
+    await initialize_model()
+    print("Model initialized on startup.\n")
     await create_table()
     # 连接 redis
     await redis_client.open()
@@ -48,6 +52,7 @@ async def register_init(app: FastAPI):
     await FastAPILimiter.close()
 
 
+
 def register_app():
     # FastAPI
     app = FastAPI(
@@ -58,7 +63,7 @@ def register_app():
         redoc_url=settings.FASTAPI_REDOCS_URL,
         openapi_url=settings.FASTAPI_OPENAPI_URL,
         default_response_class=MsgSpecJSONResponse,
-        # lifespan=register_init,  # 暂时移除 lifespan，调试问题
+        lifespan=register_init,  # 暂时移除 lifespan，调试问题
     )
 
     # 日志

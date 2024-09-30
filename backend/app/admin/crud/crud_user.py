@@ -48,14 +48,17 @@ class CRUDUser(CRUDPlus[User]):
         :param username: 用户名
         :return: 返回找到的用户，或者 None
         """
-        stmt = select(User).options(
-            joinedload(User.depts),
-            joinedload(User.roles)
-        ).where(User.username == username)
+        stmt = (
+            select(self.model)
+                .options(selectinload(self.model.depts))
+                .options(selectinload(self.model.roles).joinedload(Role.menus))
+        )
+        filters = []
 
-        result = await db.execute(stmt)
-
-        return result.scalars().first()
+        if username:
+            filters.append(self.model.username == username)
+        user = await db.execute(stmt.where(*filters))
+        return user.scalars().first()
 
     async def get_by_nickname(self, db: AsyncSession, nickname: str) -> User | None:
         """

@@ -5,43 +5,41 @@ import json
 import httpx
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, Request
+
+from backend.app.admin.service.user_service import UserService
+from backend.common.security.jwt import DependsJwtAuth
+from backend.common.response.response_schema import response_base, ResponseModel
 from ....service import worklog_service
 from ....schema.worklog_schemas import WorkLogCreate, WorkLogUpdate, WorkLogResponse, WorkLogSubmit
 from fastapi.templating import Jinja2Templates
 from ....service.search import query_embedding
 from ....service.search import Embeds
 from fastapi.responses import JSONResponse
-from ....service.utils import initialize_model
 
-templates = Jinja2Templates(directory="templates")
 
 router = APIRouter()
 
 
-@router.get('/worklogs/search')
-async def search_query(request: Request):
-    results = await worklog_service.get_all_worklogs()
+@router.get('/worklogs/search', dependencies=[DependsJwtAuth])
+async def search_query(request: Request) -> ResponseModel:
+    results = await worklog_service.get_all_user_worklogs(request.user.uuid)
     if not results:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No worklogs found")
 
     embeds = []
-    async with httpx.AsyncClient() as client:
-        for result in results:
-            log_data = WorkLogResponse.from_orm(result).dict()
-            user_uuid = log_data['user_uuid']
-            response = await client.get(f'http://localhost:8000/api/v1/sys/users/{user_uuid}')
-            if response.status_code == 200:
-                user_data = response.json()
-                log_data['user_name'] = user_data['data']['name']  # 假设返回的数据结构
-            else:
-                log_data['user_name'] = "Unknown User"
+    for result in results:
+        log_data = WorkLogResponse.from_orm(result).dict()
+        user_uuid = log_data['user_uuid']
+        user_data = await UserService.get_userinfo_by_uuid(user_uuid=user_uuid)
+        log_data['user_name'] = user_data.username  # 假设返回的数据结构
 
-            if isinstance(log_data.get('create_datetime'), datetime):
-                log_data['create_datetime'] = log_data['create_datetime'].isoformat()
-            if isinstance(log_data.get('update_datetime'), datetime):
-                log_data['update_datetime'] = log_data['update_datetime'].isoformat()
 
-            embeds.append(Embeds(log_data, result.embedding, 0))
+        if isinstance(log_data.get('create_datetime'), datetime):
+            log_data['create_datetime'] = log_data['create_datetime'].isoformat()
+        if isinstance(log_data.get('update_datetime'), datetime):
+            log_data['update_datetime'] = log_data['update_datetime'].isoformat()
+
+        embeds.append(Embeds(log_data, result.embedding, 0))
 
     query = request.query_params.get('q')
     if not query:
@@ -49,11 +47,11 @@ async def search_query(request: Request):
     else:
         results = await query_embedding(query, embeds)
         select_logs = [results[i].data for i in range(min(3, len(results)))]
+    print(select_logs)
+    return response_base.success(data=select_logs)
 
-    return templates.TemplateResponse('results.html', {"request": request, "query": query, "logs": select_logs})
 
-
-@router.post('/api/ask')
+@router.post('/worklogs/ask')
 async def api_ask(request: Request):
     """处理API请求并返回响应。"""
     data = await request.json()

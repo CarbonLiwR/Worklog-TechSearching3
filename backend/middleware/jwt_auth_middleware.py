@@ -37,7 +37,7 @@ class JwtAuthMiddleware(AuthenticationBackend):
 
     async def authenticate(self, request: Request) -> tuple[AuthCredentials, CurrentUserIns] | None:
         token = request.headers.get('Authorization')
-        print("toke", request.headers)
+
         if not token:
             return
 

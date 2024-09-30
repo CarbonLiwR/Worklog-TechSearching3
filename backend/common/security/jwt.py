@@ -176,7 +176,7 @@ async def get_current_user(db: AsyncSession, pk: int) -> User:
     :return:
     """
     from backend.app.admin.crud.crud_user import user_dao
-    print(pk)
+
     user = await user_dao.get_with_relation(db, user_id=pk)
     if not user:
         raise TokenError(msg='Token 无效')
