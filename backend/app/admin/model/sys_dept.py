@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from typing import Union
 
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from backend.app.admin.model.sys_user_dept import sys_user_dept
 from backend.common.model import Base, id_key
@@ -17,6 +17,7 @@ class Dept(Base):
     name: Mapped[str] = mapped_column(String(50), comment='部门名称')
     level: Mapped[int] = mapped_column(default=0, comment='部门层级')
     sort: Mapped[int] = mapped_column(default=0, comment='排序')
+    worklogStandard: Mapped[str | None] = mapped_column(Text(), default=None, comment='工作日志标准')
     leader: Mapped[str | None] = mapped_column(String(20), default=None, comment='负责人')
     phone: Mapped[str | None] = mapped_column(String(11), default=None, comment='手机')
     email: Mapped[str | None] = mapped_column(String(50), default=None, comment='邮箱')

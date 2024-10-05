@@ -16,6 +16,7 @@
                     <a-input
                       v-model="formModel.name"
                       :placeholder="$t('admin.api.form.name.placeholder')"
+                      style="margin-bottom: 0"
                     />
                   </a-form-item>
                 </a-col>
@@ -24,6 +25,7 @@
                     <a-input
                       v-model="formModel.path"
                       :placeholder="$t('admin.api.form.path.placeholder')"
+                      style="margin-bottom: 0"
                     />
                   </a-form-item>
                 </a-col>

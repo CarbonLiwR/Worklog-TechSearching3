@@ -45,7 +45,7 @@ const useUserStore = defineStore('user', {
         async info() {
             try {
                 const res = await getUserInfo();
-                console.log(res)
+
                 // 确保 depts 是一个数组
                 if (Array.isArray(res.depts)) {
                     console.log(res.depts);
@@ -58,6 +58,7 @@ const useUserStore = defineStore('user', {
                     ...res,
                     depts: Array.isArray(res.depts) ? res.depts : [],
                 });
+                return res; // 返回用户信息
             } catch (error) {
                 console.error('Error fetching user info:', error);
                 throw error;

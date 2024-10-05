@@ -10,26 +10,25 @@
 </template>
 
 <script lang="ts" setup>
-  import { computed } from 'vue';
-  import { useUserStore } from '@/store';
+import { computed, onMounted } from 'vue';
+import { useUserStore } from '@/store';
+import axios from 'axios';
 
-  const userStore = useUserStore();
-  const userInfo = computed(() => {
-    return {
-      username: userStore.username,
-    };
-  });
+const userStore = useUserStore();
+
+const userInfo = computed(() => userStore.userInfo); // 从store中获取userInfo
+
 </script>
 
 <style lang="less" scoped>
-  .banner {
-    width: 100%;
-    padding: 20px 20px 0 20px;
-    background-color: var(--color-bg-2);
-    border-radius: 4px 4px 0 0;
-  }
+.banner {
+  width: 100%;
+  padding: 20px 20px 0 20px;
+  background-color: var(--color-bg-2);
+  border-radius: 4px 4px 0 0;
+}
 
-  :deep(.arco-icon-home) {
-    margin-right: 6px;
-  }
+:deep(.arco-icon-home) {
+  margin-right: 6px;
+}
 </style>

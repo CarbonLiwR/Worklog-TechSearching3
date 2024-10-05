@@ -33,6 +33,7 @@ export default {
   'admin.user.form.role': 'Role',
   'admin.user.form.role.required': 'Role is required',
   'admin.user.form.role.placeholder': 'Please select role',
+  'admin.user.form.dept.placeholder': 'Please select depts',
   // columns
   'admin.user.columns.updateUserRoles.placeholder':
     "Sure you want to modify the user's role?",
@@ -42,6 +43,7 @@ export default {
   'admin.user.columns.edit.userinfo': 'Update userinfo',
   'admin.user.columns.edit.avatar': 'Update avatar',
   'admin.user.columns.edit.role': 'Update role',
+  'admin.user.columns.edit.dept': 'Update dept',
   'admin.user.columns.avatar': 'Avatar',
   'admin.user.columns.username': 'Username',
   'admin.user.columns.nickname': 'Nickname',

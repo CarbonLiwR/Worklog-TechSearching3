@@ -11,3 +11,4 @@ static/media/
 celerybeat-schedule.*
 /log/
 /app/worklog/service/embed_model/
+/embed_model/

@@ -47,6 +47,8 @@ class UpdateUserParam(UserInfoSchemaBase):
 class UpdateUserRoleParam(SchemaBase):
     roles: list[int]
 
+class UpdateUserDeptParam(SchemaBase):
+    depts: list[int]
 
 class AvatarParam(SchemaBase):
     url: HttpUrl = Field(..., description='头像 http 地址')

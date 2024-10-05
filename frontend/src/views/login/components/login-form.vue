@@ -76,7 +76,7 @@
               >
                 {{ $t('login.form.rememberPassword') }}
               </a-checkbox>
-              <a-link>{{ $t('login.form.forgetPassword') }}</a-link>
+<!--              <a-link>{{ $t('login.form.forgetPassword') }}</a-link>-->
             </div>
             <!--            登录按钮-->
             <a-button :loading="loading" html-type="submit" autocomplete="off" long type="primary">
@@ -97,6 +97,7 @@
 <script lang="ts" setup>
 import {reactive, ref} from 'vue';
 import {useRouter} from 'vue-router';
+import { useRoute } from 'vue-router';
 import {Message} from '@arco-design/web-vue';
 import {ValidatedError} from '@arco-design/web-vue/es/form/interface';
 import {useI18n} from 'vue-i18n';
@@ -108,6 +109,8 @@ import type {HttpError} from '@/api/interceptor';
 import {getOAuth2LinuxDo} from '@/api/oauth';
 import {defineEmits} from 'vue';
 
+
+const route = useRoute();
 const router = useRouter();
 const {t} = useI18n();
 const errorMessage = ref('');
@@ -120,8 +123,8 @@ const handleSwitchForm = () => {
 };
 
 // 清空 localStorage 中的用户名和密码
-localStorage.removeItem('username');
-localStorage.removeItem('password');
+// localStorage.removeItem('username');
+// localStorage.removeItem('password');
 
 const loginConfig = useStorage('login-config', {
   rememberPassword: true,
@@ -130,10 +133,8 @@ const loginConfig = useStorage('login-config', {
 });
 
 const userInfo = reactive({
-  // username: loginConfig.value.username,
-  // password: loginConfig.value.password,
-  username: '',
-  password: '',
+  username: route.query.username || '',
+  password: route.query.password || '',
   captcha: '',
 });
 const goToRegister = () => {
@@ -167,6 +168,11 @@ const handleSubmit = async ({
     //     throw new Error('login.form.login.staff.errMsg');
     //   }
     // }
+
+    // 去除所有空格
+    values.username = values.username.replace(/\s+/g, '');
+    values.password = values.password.replace(/\s+/g, '');
+
     setLoading(true);
     try {
       await userStore.login(values as LoginData);

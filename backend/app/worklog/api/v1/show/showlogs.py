@@ -45,7 +45,10 @@ async def get_worklog_by_user(request: Request) -> ResponseModel:
 
 
 # Get All WorkLogs
-@router.get("/worklogs/all", response_model=list[WorkLogResponse])
+@router.get("/worklogs/all", dependencies=[DependsJwtAuth])
 async def get_all_worklogs():
-    work_log = await worklog_service.get_all_worklogs()
-    return work_log
+    db_worklog = await worklog_service.get_all_worklogs()
+    if db_worklog is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="WorkLog not found")
+    data = [WorkLogResponse(**select_as_dict(work_log)) for work_log in db_worklog]
+    return response_base.success(data=data)

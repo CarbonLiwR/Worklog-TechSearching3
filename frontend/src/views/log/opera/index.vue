@@ -20,6 +20,7 @@
                     <a-input
                       v-model="formModel.username"
                       :placeholder="$t('log.opera.form.username.placeholder')"
+                      style="margin-bottom: 0"
                     />
                   </a-form-item>
                 </a-col>
@@ -28,6 +29,7 @@
                     <a-input
                       v-model="formModel.ip"
                       :placeholder="$t('log.opera.form.ip.placeholder')"
+                      style="margin-bottom: 0"
                     />
                   </a-form-item>
                 </a-col>

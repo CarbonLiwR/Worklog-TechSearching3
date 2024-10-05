@@ -4,6 +4,7 @@
       <Breadcrumb :items="[$t('menu.admin'), $t('menu.admin.sysDept')]" />
       <a-card :title="$t('menu.admin.sysDept')" class="general-card">
         <a-row>
+<!--          前四项-->
           <a-col :flex="62">
             <a-form
               :auto-label-width="true"
@@ -11,14 +12,17 @@
               label-align="right"
             >
               <a-row :gutter="16">
+<!--                部门筛选-->
                 <a-col :span="6">
                   <a-form-item :label="$t('admin.dept.form.name')" field="name">
                     <a-input
                       v-model="formModel.name"
                       :placeholder="$t('admin.dept.form.name.placeholder')"
+                      style="margin-bottom: 0"
                     />
                   </a-form-item>
                 </a-col>
+<!--                用户名筛选-->
                 <a-col :span="6">
                   <a-form-item
                     :label="$t('admin.dept.form.leader')"
@@ -27,9 +31,11 @@
                     <a-input
                       v-model="formModel.leader"
                       :placeholder="$t('admin.dept.form.leader.placeholder')"
+                      style="margin-bottom: 0"
                     />
                   </a-form-item>
                 </a-col>
+<!--                手机号筛选-->
                 <a-col :span="6">
                   <a-form-item
                     :label="$t('admin.dept.form.phone')"
@@ -38,9 +44,11 @@
                     <a-input
                       v-model="formModel.phone"
                       :placeholder="$t('admin.dept.form.phone.placeholder')"
+                      style="margin-bottom: 0"
                     />
                   </a-form-item>
                 </a-col>
+<!--                状态筛选-->
                 <a-col :span="6">
                   <a-form-item
                     :label="$t('admin.dept.form.status')"
@@ -58,7 +66,9 @@
               </a-row>
             </a-form>
           </a-col>
+<!--          分割线-->
           <a-divider direction="vertical" style="height: 30px" />
+<!--          搜索、重置按钮-->
           <a-col :span="6">
             <a-space :size="'medium'" direction="horizontal">
               <a-button type="primary" @click="search">
@@ -168,6 +178,7 @@
                   :placeholder="$t('admin.dept.form.leader.placeholder')"
                 ></a-input>
               </a-form-item>
+<!--              电话-->
               <a-form-item
                 :label="$t('admin.dept.columns.phone')"
                 field="phone"

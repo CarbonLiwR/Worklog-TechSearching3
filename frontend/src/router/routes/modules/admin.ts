@@ -32,16 +32,16 @@ const SYSTEM: AppRouteRecordRaw = {
         roles: ['*'],
       },
     },
-    {
-      path: 'sys-api',
-      name: 'SysApi',
-      component: () => import('@/views/admin/api/index.vue'),
-      meta: {
-        locale: 'menu.admin.sysApi',
-        requiresAuth: true,
-        roles: ['*'],
-      },
-    },
+    // {
+    //   path: 'sys-api',
+    //   name: 'SysApi',
+    //   component: () => import('@/views/admin/api/index.vue'),
+    //   meta: {
+    //     locale: 'menu.admin.sysApi',
+    //     requiresAuth: true,
+    //     roles: ['*'],
+    //   },
+    // },
     {
       path: 'sys-role',
       name: 'SysRole',

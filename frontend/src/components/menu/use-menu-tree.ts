@@ -10,7 +10,8 @@ export default function useMenuTree() {
   const appStore = useAppStore();
   const appRoute = computed(() => {
     if (appStore.menuFromServer) {
-      return appStore.appAsyncMenus;
+      const menus = appStore.appAsyncMenus as RouteRecordNormalized[];
+      return menus;
     }
     return appClientMenus;
   });

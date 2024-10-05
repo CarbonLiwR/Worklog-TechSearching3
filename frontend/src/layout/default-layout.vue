@@ -6,7 +6,6 @@
     <a-layout>
       <a-layout>
         <a-layout-sider
-          v-if="renderMenu"
           v-show="!hideMenu"
           :collapsed="collapsed"
           :collapsible="true"
@@ -19,10 +18,12 @@
         >
           <div class="menu-wrapper">
             <Menu />
+            <div v-if="!menuReady">Loading...</div>
           </div>
         </a-layout-sider>
+
         <a-drawer
-          v-if="hideMenu"
+          v-if="true"
           :closable="false"
           :footer="false"
           :visible="drawerVisible"
@@ -45,65 +46,73 @@
 </template>
 
 <script lang="ts" setup>
-  import { computed, onMounted, provide, ref, watch } from 'vue';
-  import { useRoute, useRouter } from 'vue-router';
-  import NavBar from '@/components/navbar/index.vue';
-  import Menu from '@/components/menu/index.vue';
-  import TabBar from '@/components/tab-bar/index.vue';
-  // eslint-disable-next-line import/no-cycle
-  import usePermission from '@/hooks/permission';
-  import useResponsive from '@/hooks/responsive';
-  import { useAppStore, useUserStore } from '@/store';
-  import PageLayout from './page-layout.vue';
+import { computed, onMounted, provide, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import NavBar from '@/components/navbar/index.vue';
+import Menu from '@/components/menu/index.vue';
+import TabBar from '@/components/tab-bar/index.vue';
+// eslint-disable-next-line import/no-cycle
+import usePermission from '@/hooks/permission';
+import useResponsive from '@/hooks/responsive';
+import { useAppStore, useUserStore } from '@/store';
+import PageLayout from './page-layout.vue';
 
-  const isInit = ref(false);
-  const appStore = useAppStore();
-  const userStore = useUserStore();
-  const router = useRouter();
-  const route = useRoute();
-  const permission = usePermission();
-  useResponsive(true);
-  const navbarHeight = `60px`;
-  const navbar = computed(() => appStore.navbar);
-  const renderMenu = computed(() => appStore.menu && !appStore.topMenu);
-  const hideMenu = computed(() => appStore.hideMenu);
-  const footer = computed(() => appStore.footer);
-  const menuWidth = computed(() => {
-    return appStore.menuCollapse ? 48 : appStore.menuWidth;
-  });
-  const collapsed = computed(() => {
-    return appStore.menuCollapse;
-  });
-  const paddingStyle = computed(() => {
-    const paddingLeft =
-      renderMenu.value && !hideMenu.value
-        ? { paddingLeft: `${menuWidth.value}px` }
-        : {};
-    const paddingTop = navbar.value ? { paddingTop: navbarHeight } : {};
-    return { ...paddingLeft, ...paddingTop };
-  });
-  const setCollapsed = (val: boolean) => {
-    if (!isInit.value) return; // for page initialization menu state problem
-    appStore.updateSettings({ menuCollapse: val });
-  };
-  watch(
-    () => userStore.roles,
-    (roleValue) => {
-      if (roleValue && !permission.accessRouter(route))
-        router.push({ name: 'notFound' });
-    }
-  );
-  const drawerVisible = ref(false);
-  const drawerCancel = () => {
-    drawerVisible.value = false;
-  };
-  provide('toggleDrawerMenu', () => {
-    drawerVisible.value = !drawerVisible.value;
-  });
-  onMounted(() => {
+const isInit = ref(false);
+const appStore = useAppStore();
+const userStore = useUserStore();
+const router = useRouter();
+const route = useRoute();
+const permission = usePermission();
+useResponsive(true);
+const navbarHeight = `60px`;
+const navbar = computed(() => appStore.navbar);
+const renderMenu = computed(() => appStore.menu && !appStore.topMenu);
+const hideMenu = computed(() => appStore.hideMenu);
+const footer = computed(() => appStore.footer);
+const menuWidth = computed(() => {
+  return appStore.menuCollapse ? 48 : appStore.menuWidth;
+});
+const collapsed = computed(() => {
+  return appStore.menuCollapse;
+});
+const paddingStyle = computed(() => {
+  const paddingLeft =
+    renderMenu.value && !hideMenu.value
+      ? { paddingLeft: `${menuWidth.value}px` }
+      : {};
+  const paddingTop = navbar.value ? { paddingTop: navbarHeight } : {};
+  return { ...paddingLeft, ...paddingTop };
+});
+const setCollapsed = (val: boolean) => {
+  if (!isInit.value) return; // for page initialization menu state problem
+  appStore.updateSettings({ menuCollapse: val });
+};
+watch(
+  () => userStore.roles,
+  (roleValue) => {
+    if (roleValue && !permission.accessRouter(route))
+      router.push({ name: 'notFound' });
+  }
+);
+const drawerVisible = ref(false);
+const drawerCancel = () => {
+  drawerVisible.value = false;
+};
+provide('toggleDrawerMenu', () => {
+  drawerVisible.value = !drawerVisible.value;
+});
+
+onMounted(async () => {
+  try {
+    await appStore.fetchServerMenuConfig();
     isInit.value = true;
-  });
+  } catch (error) {
+    console.error("Failed to fetch server menu config:", error);
+    // 可以在这里添加用户友好的错误提示
+  }
+});
 </script>
+
 
 <style lang="less" scoped>
   @nav-size-height: 60px;

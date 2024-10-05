@@ -8,7 +8,7 @@ const TECH_LOGS: AppRouteRecordRaw = {
   meta: {
     locale: 'menu.technicalSeeker',
     requiresAuth: true,
-    icon: 'icon-log',
+    icon: 'icon-file',
     order: 0,
     hideInMenu: false,
   },

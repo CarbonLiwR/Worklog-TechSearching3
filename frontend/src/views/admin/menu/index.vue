@@ -20,6 +20,7 @@
                     <a-input
                       v-model="formModel.title"
                       :placeholder="$t('admin.menu.form.title.placeholder')"
+                      style="margin-bottom: 0"
                     />
                   </a-form-item>
                 </a-col>
@@ -573,6 +574,7 @@
   const fetchMenuDetail = async (pk: number) => {
     setLoading(true);
     try {
+      console.log(pk)
       const res = await querySysMenuDetail(pk);
       resetForm(res);
       menuType.value = res.menu_type;

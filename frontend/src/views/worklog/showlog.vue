@@ -12,19 +12,19 @@
         <input type="text" class="s_ipt" name="wd" id="kw" maxlength="105" autocomplete="off"
                placeholder="请输入搜索内容" v-model="searchQuery" @keypress.enter="searchLogs">
         <button class="s_btn" type="button" @click="searchLogs">搜索</button>
-
+        <span style="font-size: 16px; margin-left: 20px">工作部门：</span>
         <select
             id="groupSelector"
+            v-if="currentuser && computedGroups.length > 0"
             v-model="selectedGroup"
             @change="updateGroupUuid"
             style="width: 100px; font-size: 16px; margin-left: 5px"
         >
-          <option
-              v-for="group in userStore.depts"
-              :key="group.id"
-              :value="group.id"
-          >{{ group.name }}</option
-          >
+          <option value="个人">个人</option>
+          <option v-if="currentuser.is_superuser" value="全部">全部</option>
+          <option v-for="group in computedGroups" :key="group.id" :value="group.id">
+            {{ group.name }}
+          </option>
         </select>
       </div>
       <div class="table-container">
@@ -33,22 +33,22 @@
           <tr>
             <th>姓名</th>
             <th>时间</th>
-            <th>工作组</th>
+            <th>工作部门</th>
             <th>工作日志</th>
           </tr>
           </thead>
           <tbody id="logTableBody">
-
           <tr v-for="log in filteredLogs" :key="log.uuid">
-            <td>{{ log.user_uuid }}</td> <!-- 显示 user_name -->
+                        <td>{{ log.nickname }}</td> <!-- 显示 user_name -->
+            <!--            <td>{{ log.user_uuid }}</td> &lt;!&ndash; 显示 user_name &ndash;&gt;-->
+<!--            <td>{{ currentuser.nickname }}</td> &lt;!&ndash; 显示 user_name &ndash;&gt;-->
             <td>{{ new Date(log.create_datetime).toLocaleString() }}</td> <!-- 显示 create_datetime -->
-            <td>{{ log.group_uuid}}</td> <!-- 显示 group_name -->
+            <td>{{ log.group_name }}</td> <!-- 显示 group_name -->
             <td v-html="formatLogContent(log.content)"></td> <!-- 显示 content -->
           </tr>
           <tr v-if="filteredLogs.length === 0">
             <td colspan="6" style="text-align: center;">暂无工作日志</td>
           </tr>
-
           </tbody>
         </table>
       </div>
@@ -62,31 +62,89 @@
 
 <script lang="ts" setup>
 import {ref, computed, onMounted} from 'vue';
-import { useUserStore } from '@/store';
+import {useUserStore} from '@/store';
 import axios from 'axios';
+
 const userStore = useUserStore();
+
 const logs = ref([]);
 const user_uuid = "{{ user_uuid }}";
+const groupNames = ref({}); // 存储 group_uuid 对应的名称
+const userNames = ref({}); // 存储 user_uuid 对应的昵称
 const role = "{{ role }}";  // 从模板中获取
-const selectedGroup = ref("");  // 选择的组
+const selectedGroup = ref("个人");  // 选择的组
+let currentuser;
+const searchResults = ref([]); // 定义一个响应式引用
 
 const fetchUserInfo = async () => {
   try {
-    await userStore.info(); // 调用 store 中的 actions
+    const userInfo = await userStore.info(); // 调用 store 中的 actions
+    return userInfo; // 返回获取到的用户信息
   } catch (err) {
     console.error('Failed to fetch user info:', err);
+    return null; // 可选：返回 null 以处理错误情况
+  }
+};
+// 获取部门名称
+const fetchGroupNames = async (pk) => {
+  if (groupNames.value[pk]) return;
+  try {
+    const response = await axios.get(`http://localhost:8000/api/v1/sys/depts/${pk}`); // 使用反引号
+    groupNames.value[pk] = response.name; // 直接存储部门名称
+  } catch (error) {
+    console.error('Error fetching group names:', error);
   }
 };
 
-const filteredLogs = computed(() => {
-  console.log(selectedGroup.value, logs.value)
-  if (selectedGroup.value === "123") {
-    return logs.value.filter(log => log.group_uuid === selectedGroup.value);
-  } else if (selectedGroup.value === "") {
-    return logs.value;
-  } else {
-    return logs.value.filter(log => log.group_uuid === selectedGroup.value);
+// 计算组名
+const computedGroups = computed(() => {
+  if (currentuser) {
+    return Object.entries(groupNames.value).map(([id, name]) => ({ id, name })); // 返回一个数组，包含所有组的 ID 和名称
   }
+  return []; // 非超级用户时返回空数组
+});
+
+// 获取用户昵称
+const fetchUserName = async (uuid) => {
+  if (userNames.value[uuid]) return; // 如果已经获取过则直接返回
+  try {
+    const response = await axios.get(`http://localhost:8000/api/v1/sys/users/uuid/${uuid}`);
+    userNames.value[uuid] = response.nickname; // 存储用户昵称
+  } catch (error) {
+    console.error('Error fetching user name:', error);
+  }
+};
+
+const updateGroupUuid = () => {
+  // console.log('选中的组:', selectedGroup.value);
+};
+
+const filteredLogs = computed(() => {
+  let logsToDisplay = [];
+
+  if (searchResults.value.length > 0) {
+    logsToDisplay = searchResults.value; // 返回搜索结果
+  } else if (selectedGroup.value === "个人") {
+    logsToDisplay = logs.value.filter(log => log.user_uuid === currentuser.uuid);
+  } else if (selectedGroup.value === "全部") {
+    logsToDisplay = logs.value;
+    // 根据 nickname 排序
+    logsToDisplay.sort((a, b) => {
+      const nicknameA = userNames.value[a.user_uuid] || '';
+      const nicknameB = userNames.value[b.user_uuid] || '';
+      return nicknameA.localeCompare(nicknameB); // 按字母顺序排序
+    });
+  } else {
+    logsToDisplay = logs.value.filter(log => log.group_uuid === selectedGroup.value);
+  }
+
+  // 替换 group_uuid 为对应的名称
+  return logsToDisplay.map(log => ({
+    ...log,
+    group_name: groupNames.value[log.group_uuid] || '未知', // 使用部门名称或保留原 ID
+    nickname: userNames.value[log.user_uuid] || '未知' ,// 使用用户昵称或保留原 ID
+  }));
+
 });
 
 // 格式化日志内容
@@ -105,46 +163,59 @@ function formatLogContent(content) {
 // 搜索日志
 function searchLogs() {
   const input = document.getElementById('kw').value.toLowerCase();
-  console.log(input);
-  const searchResults = logs.value.filter(log =>
-      log.content.toLowerCase().includes(input)
-  );
-  searchResults.value = logs.value.filter(log =>
-      log.content.toLowerCase().includes(input)
-  );
+  console.log('搜索关键词:', input);
+  searchResults.value = logs.value.filter(log => {
+    return log.content && log.content.toLowerCase().includes(input);
+  });
+  console.log('搜索结果:', searchResults.value);
+  if (searchResults.value.length === 0) {
+    alert('没有搜索结果'); // 弹出提示框
+  }
 }
 
-// 加载组和日志数据
+// 加载日志数据
 async function loadInitialData() {
   try {
     // 修改 URL 确保与后端一致
-    const logResponse = await axios.get('http://localhost:8000/api/v1/show/worklogs/user');
-    logs.value = logResponse;
-    console.log(logResponse);
-    if (logResponse && logResponse.status === 200) {
+    let logResponse;
+    if (currentuser.is_superuser == true) {
+      logResponse = await axios.get('http://localhost:8000/api/v1/show/worklogs/all');
+    } else {
+      logResponse = await axios.get('http://localhost:8000/api/v1/show/worklogs/user');
+    }
+    // logs.value = logResponse;
+    if (logResponse) {
       logs.value = logResponse;  // 将后端返回的数据赋给 logs
-      console.log(logs.value);  // 打印日志数据确认
+      console.log(logResponse);
+
+      // 逐个加载部门名称和用户昵称
+      const fetchGroupPromises = [...new Set(logs.value.map(log => log.group_uuid))]
+          .map(pk => fetchGroupNames(pk)); // 获取部门名称
+
+      const fetchUserPromises = [...new Set(logs.value.map(log => log.user_uuid))]
+          .map(uuid => fetchUserName(uuid)); // 获取用户昵称
+
+      await Promise.all([...fetchGroupPromises, ...fetchUserPromises]); // 等待所有请求完成
+
     } else {
       console.error('Error fetching logs:', logResponse.statusText);
     }
   } catch (error) {
-    // 打印更详细的错误信息
     if (error.response) {
-      // 服务器响应了错误代码
       console.error('Error with response:', error.response.status, error.response.data);
     } else if (error.request) {
-      // 请求发送了但没有收到响应
       console.error('No response received:', error.request);
     } else {
-      // 其他错误
       console.error('Error during API call:', error.message);
     }
   }
 }
 
+
 onMounted(async () => {
-  await fetchUserInfo();
-  loadInitialData();
+  currentuser = await fetchUserInfo();
+  console.log('当前用户:', currentuser.uuid); // 输出当前用户信息以便调试
+  await loadInitialData(); // 确保在获取用户信息后再加载日志数据
 });
 
 
@@ -280,12 +351,12 @@ th:nth-child(2), td:nth-child(2) {
 }
 
 th:nth-child(3), td:nth-child(3) {
-  width: 10%;
+  width: 8%;
   text-align: center;
 }
 
 th:nth-child(4), td:nth-child(4) {
-  width: 74%;
+  width: 76%;
   text-align: left;
 }
 

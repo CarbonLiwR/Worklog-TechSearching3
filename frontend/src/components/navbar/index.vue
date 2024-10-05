@@ -25,65 +25,68 @@
       <Menu v-if="topMenu"/>
     </div>
     <ul class="right-side">
-      <li>
-        <a-tooltip :content="$t('settings.search')">
-          <a-button :shape="'circle'" class="nav-btn" type="outline">
-            <template #icon>
-              <icon-search/>
-            </template>
-          </a-button>
-        </a-tooltip>
-      </li>
-      <li>
-        <a-tooltip :content="$t('settings.language')">
-          <a-button
-              :shape="'circle'"
-              class="nav-btn"
-              type="outline"
-              @click="setDropDownVisible"
-          >
-            <template #icon>
-              <icon-language/>
-            </template>
-          </a-button>
-        </a-tooltip>
-        <a-dropdown trigger="click" @select="changeLocale as any">
-          <div ref="triggerBtn" class="trigger-btn"></div>
-          <template #content>
-            <a-doption
-                v-for="item in locales"
-                :key="item.value"
-                :value="item.value"
-            >
-              <template #icon>
-                <icon-check v-show="item.value === currentLocale"/>
-              </template>
-              {{ item.label }}
-            </a-doption>
-          </template>
-        </a-dropdown>
-      </li>
-      <li>
-        <a-tooltip
-            :content="
-            theme === 'light'
-              ? $t('settings.navbar.theme.toDark')
-              : $t('settings.navbar.theme.toLight')
-          "
-        >
-          <a-button
-              :shape="'circle'"
-              class="nav-btn"
-              type="outline"
-              @click="handleToggleTheme"
-          >
-            <template #icon>
-              <icon-moon-fill v-if="theme === 'dark'"/>
-              <icon-sun-fill v-else/>
-            </template>
-          </a-button>
-        </a-tooltip>
-      </li>
+<!--      搜索-->
+<!--      <li>-->
+<!--        <a-tooltip :content="$t('settings.search')">-->
+<!--          <a-button :shape="'circle'" class="nav-btn" type="outline">-->
+<!--            <template #icon>-->
+<!--              <icon-search/>-->
+<!--            </template>-->
+<!--          </a-button>-->
+<!--        </a-tooltip>-->
+<!--      </li>-->
+<!--      语言-->
+<!--      <li>-->
+<!--        <a-tooltip :content="$t('settings.language')">-->
+<!--          <a-button-->
+<!--              :shape="'circle'"-->
+<!--              class="nav-btn"-->
+<!--              type="outline"-->
+<!--              @click="setDropDownVisible"-->
+<!--          >-->
+<!--            <template #icon>-->
+<!--              <icon-language/>-->
+<!--            </template>-->
+<!--          </a-button>-->
+<!--        </a-tooltip>-->
+<!--        <a-dropdown trigger="click" @select="changeLocale as any">-->
+<!--          <div ref="triggerBtn" class="trigger-btn"></div>-->
+<!--          <template #content>-->
+<!--            <a-doption-->
+<!--                v-for="item in locales"-->
+<!--                :key="item.value"-->
+<!--                :value="item.value"-->
+<!--            >-->
+<!--              <template #icon>-->
+<!--                <icon-check v-show="item.value === currentLocale"/>-->
+<!--              </template>-->
+<!--              {{ item.label }}-->
+<!--            </a-doption>-->
+<!--          </template>-->
+<!--        </a-dropdown>-->
+<!--      </li>-->
+<!--      灯-->
+<!--      <li>-->
+<!--        <a-tooltip-->
+<!--            :content="-->
+<!--            theme === 'light'-->
+<!--              ? $t('settings.navbar.theme.toDark')-->
+<!--              : $t('settings.navbar.theme.toLight')-->
+<!--          "-->
+<!--        >-->
+<!--          <a-button-->
+<!--              :shape="'circle'"-->
+<!--              class="nav-btn"-->
+<!--              type="outline"-->
+<!--              @click="handleToggleTheme"-->
+<!--          >-->
+<!--            <template #icon>-->
+<!--              <icon-moon-fill v-if="theme === 'dark'"/>-->
+<!--              <icon-sun-fill v-else/>-->
+<!--            </template>-->
+<!--          </a-button>-->
+<!--        </a-tooltip>-->
+<!--      </li>-->
       <li>
         <a-tooltip
             :content="
@@ -120,32 +123,33 @@
         </a-tooltip>
       </li>
       <li>
-        <a-dropdown trigger="click">
+        <a-dropdown trigger="click"  class="avaterhover">
           <a-avatar
               :size="32"
               :style="{ marginRight: '8px', cursor: 'pointer' }"
           >
-            <img :src="avatar" alt="avatar"/>
+<!--            <img :src="avatar" alt="avatar"/>-->
+            <icon-user></icon-user>
           </a-avatar>
           <template #content>
-            <a-doption>
-              <a-space @click="switchRoles">
-                <icon-tag/>
-                <span> 切换角色 </span>
-              </a-space>
-            </a-doption>
-            <a-doption>
-              <a-space @click="$router.push({ name: 'Info' })">
-                <icon-user/>
-                <span> 个人信息 </span>
-              </a-space>
-            </a-doption>
-            <a-doption>
-              <a-space @click="$router.push({ name: 'Setting' })">
-                <icon-settings/>
-                <span> 用户设置 </span>
-              </a-space>
-            </a-doption>
+<!--            <a-doption>-->
+<!--              <a-space @click="switchRoles">-->
+<!--                <icon-tag/>-->
+<!--                <span> 切换角色 </span>-->
+<!--              </a-space>-->
+<!--            </a-doption>-->
+<!--            <a-doption>-->
+<!--              <a-space @click="$router.push({ name: 'Info' })">-->
+<!--                <icon-user/>-->
+<!--                <span> 个人信息 </span>-->
+<!--              </a-space>-->
+<!--            </a-doption>-->
+<!--            <a-doption>-->
+<!--              <a-space @click="$router.push({ name: 'Setting' })">-->
+<!--                <icon-settings/>-->
+<!--                <span> 用户设置 </span>-->
+<!--              </a-space>-->
+<!--            </a-doption>-->
             <a-doption>
               <a-space @click="handleLogout">
                 <icon-export/>
@@ -235,7 +239,6 @@ const getCurrentUserInfo = async () => {
     },
   });
   CurrentUserInfo.value = response; // 保存用户信息
-  console.log(CurrentUserInfo.value);
 };
 </script>
 
@@ -293,6 +296,10 @@ const getCurrentUserInfo = async () => {
   .trigger-btn {
     margin-left: 14px;
   }
+}
+
+.avatarhover :hover {
+  background-color: #f0f0f0;
 }
 </style>
 

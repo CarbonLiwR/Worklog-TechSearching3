@@ -39,6 +39,8 @@ export interface SysRoleDeleteParams {
   pk: number[];
 }
 
+
+
 export function querySysRoleAll(): Promise<SysRoleRes[]> {
   return axios.get('/api/v1/sys/roles/all');
 }

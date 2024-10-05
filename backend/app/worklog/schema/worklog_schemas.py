@@ -4,8 +4,9 @@ from datetime import datetime
 
 
 class WorkLogSubmit(BaseModel):
-    group_uuid: int
     text: str
+    group_uuid: int
+    user_uuid: str
 
 
 class WorkLogCreate(BaseModel):

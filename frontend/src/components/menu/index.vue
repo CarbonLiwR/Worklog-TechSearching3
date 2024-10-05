@@ -1,165 +1,179 @@
 <script lang="tsx">
-  import { compile, computed, defineComponent, h, ref } from 'vue';
-  import { useI18n } from 'vue-i18n';
-  import type { RouteMeta, RouteRecordRaw } from 'vue-router';
-  import { useRoute, useRouter } from 'vue-router';
-  import { useAppStore } from '@/store';
-  import { listenerRouteChange } from '@/utils/route-listener';
-  import { openWindow, regexUrl } from '@/utils';
-  import useMenuTree from './use-menu-tree';
+import {compile, computed, defineComponent, h, ref, onMounted} from 'vue';
+import {useI18n} from 'vue-i18n';
+import type {RouteMeta, RouteRecordRaw} from 'vue-router';
+import {useRoute, useRouter} from 'vue-router';
+import {useAppStore} from '@/store';
+import {listenerRouteChange} from '@/utils/route-listener';
+import {openWindow, regexUrl} from '@/utils';
+import useMenuTree from './use-menu-tree';
+import {querySysMenuTree} from "@/api/menu";
 
-  export default defineComponent({
-    emit: ['collapse'],
-    setup() {
-      const { t } = useI18n();
-      const appStore = useAppStore();
-      const router = useRouter();
-      const route = useRoute();
-      const { menuTree } = useMenuTree();
-      const collapsed = computed({
-        get() {
-          if (appStore.device === 'desktop') return appStore.menuCollapse;
-          return false;
-        },
-        set(value: boolean) {
-          appStore.updateSettings({ menuCollapse: value });
-        },
+export default defineComponent({
+  emit: ['collapse'],
+  setup() {
+    const {t} = useI18n();
+    const appStore = useAppStore();
+    const router = useRouter();
+    const route = useRoute();
+    const {menuTree} = useMenuTree();
+    const menuReady = ref(false); // 初始化为 false
+    const menuValue = ref([]); // 初始化为 false
+    const loadMenuData = async () => {
+      const menuTr = await querySysMenuTree();
+      menuValue.value = menuTr;
+      menuReady.value = true; // 数据加载完成后设置为 true
+    };
+
+    onMounted(() => {
+      loadMenuData(); // 调用加载菜单数据的函数
+    });
+
+    const collapsed = computed({
+      get() {
+        if (appStore.device === 'desktop') return appStore.menuCollapse;
+        return false;
+      },
+      set(value: boolean) {
+        appStore.updateSettings({menuCollapse: value});
+      },
+    });
+
+    const topMenu = computed(() => appStore.topMenu);
+    const openKeys = ref<string[]>([]);
+    const selectedKey = ref<string[]>([]);
+
+    const goto = (item: RouteRecordRaw) => {
+      // Open external link
+      const path = item.path ? (item.path as string) : '';
+      if (regexUrl.test(path)) {
+        openWindow(path);
+        selectedKey.value = [item.name as string];
+        return;
+      }
+      // Eliminate external link side effects
+      const {hideInMenu, activeMenu} = item.meta as RouteMeta;
+      if (route.name === item.name && !hideInMenu && !activeMenu) {
+        selectedKey.value = [item.name as string];
+        return;
+      }
+      // Trigger router change
+      router.push({
+        name: item.name,
       });
+    };
 
-      const topMenu = computed(() => appStore.topMenu);
-      const openKeys = ref<string[]>([]);
-      const selectedKey = ref<string[]>([]);
-
-      const goto = (item: RouteRecordRaw) => {
-        // Open external link
-        const path = item.path ? (item.path as string) : '';
-        if (regexUrl.test(path)) {
-          openWindow(path);
-          selectedKey.value = [item.name as string];
+    const findMenuOpenKeys = (target: string) => {
+      const result: string[] = [];
+      let isFind = false;
+      const backtrack = (item: RouteRecordRaw, keys: string[]) => {
+        if (item.name === target) {
+          isFind = true;
+          result.push(...keys);
           return;
         }
-        // Eliminate external link side effects
-        const { hideInMenu, activeMenu } = item.meta as RouteMeta;
-        if (route.name === item.name && !hideInMenu && !activeMenu) {
-          selectedKey.value = [item.name as string];
-          return;
+        if (item.children?.length) {
+          item.children.forEach((el) => {
+            backtrack(el, [...keys, el.name as string]);
+          });
         }
-        // Trigger router change
-        router.push({
-          name: item.name,
-        });
       };
+      menuTree.value.forEach((el: RouteRecordRaw) => {
+        if (isFind) return; // Performance optimization
+        backtrack(el, [el.name as string]);
+      });
+      return result;
+    };
 
-      const findMenuOpenKeys = (target: string) => {
-        const result: string[] = [];
-        let isFind = false;
-        const backtrack = (item: RouteRecordRaw, keys: string[]) => {
-          if (item.name === target) {
-            isFind = true;
-            result.push(...keys);
-            return;
-          }
-          if (item.children?.length) {
-            item.children.forEach((el) => {
-              backtrack(el, [...keys, el.name as string]);
-            });
-          }
-        };
-        menuTree.value.forEach((el: RouteRecordRaw) => {
-          if (isFind) return; // Performance optimization
-          backtrack(el, [el.name as string]);
-        });
-        return result;
-      };
-
-      listenerRouteChange((newRoute) => {
-        const { requiresAuth, activeMenu, hideInMenu } = newRoute.meta;
-        if (requiresAuth && (!hideInMenu || activeMenu)) {
-          const menuOpenKeys = findMenuOpenKeys(
+    listenerRouteChange((newRoute) => {
+      const {requiresAuth, activeMenu, hideInMenu} = newRoute.meta;
+      if (requiresAuth && (!hideInMenu || activeMenu)) {
+        const menuOpenKeys = findMenuOpenKeys(
             (activeMenu || newRoute.name) as string
-          );
+        );
 
-          const keySet = new Set([...menuOpenKeys, ...openKeys.value]);
-          openKeys.value = [...keySet];
+        const keySet = new Set([...menuOpenKeys, ...openKeys.value]);
+        openKeys.value = [...keySet];
 
-          selectedKey.value = [
-            activeMenu || menuOpenKeys[menuOpenKeys.length - 1],
-          ];
-        }
-      }, true);
+        selectedKey.value = [
+          activeMenu || menuOpenKeys[menuOpenKeys.length - 1],
+        ];
+      }
+    }, true);
 
-      const setCollapse = (val: boolean) => {
-        if (appStore.device === 'desktop')
-          appStore.updateSettings({ menuCollapse: val });
-      };
+    const setCollapse = (val: boolean) => {
+      if (appStore.device === 'desktop')
+        appStore.updateSettings({menuCollapse: val});
+    };
 
-      const renderSubMenu = () => {
-        function travel(_route: RouteRecordRaw[], nodes = []) {
-          if (_route) {
-            _route.forEach((element) => {
-              const icon = element?.meta?.icon
+    const renderSubMenu = () => {
+      // const treevalue = await querySysMenuTree();
+      function travel(_route: RouteRecordRaw[], nodes = []) {
+        if (_route) {
+          _route.forEach((element) => {
+            const icon = element?.meta?.icon
                 ? () => h(compile(`<${element?.meta?.icon} />`))
                 : null;
-              const node =
+            const node =
                 element?.children && element?.children.length !== 0 ? (
-                  <a-sub-menu
-                    key={element?.name}
-                    v-slots={{
-                      icon,
-                      title: () => h(compile(t(element?.meta?.locale || ''))),
-                    }}
-                  >
-                    {travel(element?.children)}
-                  </a-sub-menu>
+                    <a-sub-menu
+                        key={element?.name}
+                        v-slots={{
+                          icon,
+                          title: () => h(compile(t(element?.meta?.locale || ''))),
+                        }}
+                    >
+                      {travel(element?.children)}
+                    </a-sub-menu>
                 ) : (
-                  <a-menu-item
-                    key={element?.name}
-                    v-slots={{ icon }}
-                    onClick={() => goto(element)}
-                  >
-                    {t(element?.meta?.locale || '')}
-                  </a-menu-item>
+                    <a-menu-item
+                        key={element?.name}
+                        v-slots={{icon}}
+                        onClick={() => goto(element)}
+                    >
+                      {t(element?.meta?.locale || '')}
+                    </a-menu-item>
                 );
-              nodes.push(node as never);
-            });
-          }
-          return nodes;
+            nodes.push(node as never);
+          });
         }
+        return nodes;
+      }
+      return travel(menuTree.value);
+    };
 
-        return travel(menuTree.value);
-      };
-
-      return () => (
+    return () => (
         <a-menu
-          mode={topMenu.value ? 'horizontal' : 'vertical'}
-          v-model:collapsed={collapsed.value}
-          v-model:open-keys={openKeys.value}
-          show-collapse-button={appStore.device !== 'mobile'}
-          auto-open={false}
-          selected-keys={selectedKey.value}
-          auto-open-selected={true}
-          level-indent={34}
-          style="height: 100%; width:100%;"
-          onCollapse={setCollapse}
+            v-if="menuReady"
+            mode={topMenu.value ? 'horizontal' : 'vertical'}
+            v-model:collapsed={collapsed.value}
+            v-model:open-keys={openKeys.value}
+            show-collapse-button={appStore.device !== 'mobile'}
+            auto-open={false}
+            selected-keys={selectedKey.value}
+            auto-open-selected={true}
+            level-indent={34}
+            style="height: 100%; width:100%;"
+            onCollapse={setCollapse}
         >
           {renderSubMenu()}
         </a-menu>
-      );
-    },
-  });
+    );
+  },
+});
 </script>
 
 <style lang="less" scoped>
-  :deep(.arco-menu-inner) {
-    .arco-menu-inline-header {
-      display: flex;
-      align-items: center;
-    }
+:deep(.arco-menu-inner) {
+  .arco-menu-inline-header {
+    display: flex;
+    align-items: center;
+  }
 
-    .arco-icon {
-      &:not(.arco-icon-down) {
-        font-size: 18px;
-      }
+  .arco-icon {
+    &:not(.arco-icon-down) {
+      font-size: 18px;
     }
   }
+}
 </style>

@@ -82,27 +82,24 @@
           </template>
         </a-input-password>
       </a-form-item>
-      <!--              重复密码-->
-<!--      <a-form-item-->
-<!--          :rules="[-->
-<!--              { required: true, message: $t('register.form.confirmPassword.errMsg') },-->
-<!--              { validator: validateConfirmPassword, trigger: 'blur' }-->
-<!--          ]"-->
-<!--          :validate-trigger="['change', 'blur']"-->
-<!--          field="confirmPassword"-->
-<!--          hide-label-->
-<!--      >-->
-<!--        <a-input-password-->
-<!--            v-model="userInfo.confirmPassword"-->
-<!--            class="register-input"-->
-<!--            :placeholder="$t('register.form.confirmPassword.placeholder')"-->
-<!--            allow-clear-->
-<!--        >-->
-<!--          <template #prefix>-->
-<!--            <icon-lock/>-->
-<!--          </template>-->
-<!--        </a-input-password>-->
-<!--      </a-form-item>-->
+     <!-- 确认密码 -->
+<a-form-item
+    :rules="[{ required: true, validator: validateConfirmPassword }]"
+    :validate-trigger="['change', 'blur']"
+    field="confirmPassword"
+    hide-label
+>
+    <a-input-password
+        v-model="userInfo.confirmPassword"
+        class="register-input"
+        :placeholder="$t('register.form.confirmPassword.placeholder')"
+        allow-clear
+    >
+      <template #prefix>
+            <icon-lock/>
+          </template>
+    </a-input-password>
+</a-form-item>
       <!--      验证码-->
       <a-form-item
           :rules="[{ required: true, message: $t('register.form.captcha.errMsg') }]"
@@ -168,12 +165,20 @@ const refreshCaptcha = async () => {
 };
 refreshCaptcha();
 
-const validateConfirmPassword = (_: any, value: string) => {
-  if (value !== userInfo.password) {
-    return Promise.reject(new Error(t('register.form.confirmPassword.mismatch')));
+const validateConfirmPassword = async (_: any) => {
+  const confirmPassword = userInfo.confirmPassword.trim();
+  const password = userInfo.password.trim();
+
+  if (confirmPassword !== password) {
+    errorMessage.value = t('register.form.confirmPassword.mismatch'); // 设置错误信息
+    return Promise.reject(new Error(errorMessage.value));
+  } else {
+    errorMessage.value = ''; // 清空错误信息
   }
   return Promise.resolve();
 };
+
+
 
 const handleSubmit = async () => {
   if (loading.value) return;
@@ -182,13 +187,17 @@ const handleSubmit = async () => {
     console.log('开始注册', userInfo);
     await userStore.register(userInfo); // 提交注册信息
     Message.success(t('register.form.register.success'));
-    router.push('/login'); // 注册成功后跳转到登录页面
+
+    // 使用 query 传递用户名和密码
+    router.push({ name: 'login-form', query: { username: userInfo.username, password: userInfo.password } });
   } catch (err) {
     errorMessage.value = (err as HttpError).msg;
   } finally {
     setLoading(false);
   }
 };
+
+
 
 
 </script>
@@ -249,6 +258,10 @@ const handleSubmit = async () => {
   border-bottom-left-radius: 10px;
 }
 
+.error-message {
+  color: red; /* 可以根据需要调整样式 */
+  margin-top: 8px;
+}
 .captcha-wrapper {
   height: 40px;
   margin-left: auto;

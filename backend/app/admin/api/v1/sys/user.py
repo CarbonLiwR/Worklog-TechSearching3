@@ -11,7 +11,7 @@ from backend.app.admin.schema.user import (
     RegisterUserParam,
     ResetPasswordParam,
     UpdateUserParam,
-    UpdateUserRoleParam,
+    UpdateUserRoleParam, UpdateUserDeptParam,
 )
 from backend.app.admin.service.user_service import user_service
 from backend.common.pagination import DependsPagination, paging_data
@@ -52,7 +52,7 @@ async def get_current_user(request: Request) -> ResponseModel:
     data = GetCurrentUserInfoDetail(**request.user.model_dump())
     return response_base.success(data=data)
 
-@router.get('/{user_uuid}', summary='查看用户信息(uuid)', dependencies=[DependsJwtAuth])
+@router.get('/uuid/{user_uuid}', summary='查看用户信息(uuid)', dependencies=[DependsJwtAuth])
 async def get_user_by_uuid(user_uuid: Annotated[str, Path(...)]) -> ResponseModel:
     current_user = await user_service.get_userinfo_by_uuid(user_uuid=user_uuid)
     data = GetUserInfoListDetails(**select_as_dict(current_user))
@@ -72,6 +72,22 @@ async def update_user(request: Request, username: Annotated[str, Path(...)], obj
     if count > 0:
         return response_base.success()
     return response_base.fail()
+
+
+
+@router.put(
+    '/{username}/dept',
+    summary='更新用户部门',
+    dependencies=[
+        Depends(RequestPermission('sys:user:dept:edit')),
+        DependsRBAC,
+    ],
+)
+async def update_user_dept(
+    request: Request, username: Annotated[str, Path(...)], obj: UpdateUserDeptParam
+) -> ResponseModel:
+    await user_service.update_depts(request=request, username=username, obj=obj)
+    return response_base.success()
 
 
 @router.put(

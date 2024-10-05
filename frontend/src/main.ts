@@ -13,6 +13,8 @@ import '@/api/interceptor';
 import ElementPlus from 'element-plus';
 
 const app = createApp(App);
+
+app.use(globalComponents);
 app.config.warnHandler = () => null;
 
 app.use(ArcoVue, {});
@@ -23,7 +25,6 @@ app.use(ElementPlus);
 app.use(router);
 app.use(store);
 app.use(i18n);
-app.use(globalComponents);
 app.use(directive);
 app.use(InstallCodemirro);
 

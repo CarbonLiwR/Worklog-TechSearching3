@@ -31,7 +31,7 @@ async def search_query(request: Request) -> ResponseModel:
         log_data = WorkLogResponse.from_orm(result).dict()
         user_uuid = log_data['user_uuid']
         user_data = await UserService.get_userinfo_by_uuid(user_uuid=user_uuid)
-        log_data['user_name'] = user_data.username  # 假设返回的数据结构
+        log_data['user_name'] = user_data.nickname  # 假设返回的数据结构
 
 
         if isinstance(log_data.get('create_datetime'), datetime):
@@ -46,7 +46,7 @@ async def search_query(request: Request) -> ResponseModel:
         raise HTTPException(status_code=400, detail="搜索内容不能为空")
     else:
         results = await query_embedding(query, embeds)
-        select_logs = [results[i].data for i in range(min(3, len(results)))]
+        select_logs = [results[i].data for i in range(min(10, len(results)))]
     print(select_logs)
     return response_base.success(data=select_logs)
 

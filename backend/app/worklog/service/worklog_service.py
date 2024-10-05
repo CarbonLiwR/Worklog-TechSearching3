@@ -1,19 +1,27 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from backend.app.worklog.model import WorkLog
-from datetime import datetime
 from backend.common import id_generation
 from backend.database.db_mysql import async_db_session
 from fastapi import Request
+import pytz
+from datetime import datetime
+
+#中国时间
+def get_china_time() -> datetime:
+    """获取当前的北京时间"""
+    utc_time = datetime.utcnow()
+    china_tz = pytz.timezone('Asia/Shanghai')
+    return utc_time.replace(tzinfo=pytz.utc).astimezone(china_tz)
 
 # 创建工作日志
-async def create_worklog(request: Request, worklog_data: dict) -> WorkLog:
+async def create_worklog( worklog_data: dict) -> WorkLog:
     async with async_db_session() as db:
         uuid = f'workLog_{id_generation.generate_id()}'
-        while await get_worklog_by_uuid(request.user.id):
-            uuid = f'workLog_{id_generation.generate_id()}'
+        # while await get_worklog_by_uuid(request.user.id):
+        #     uuid = f'workLog_{id_generation.generate_id()}'
 
-        db_worklog = WorkLog(**worklog_data, uuid=uuid, create_datetime=datetime.utcnow(), active=True)
+        db_worklog = WorkLog(**worklog_data, uuid=uuid, create_datetime=get_china_time(), active=True)
         db.add(db_worklog)
         await db.commit()
         await db.refresh(db_worklog)
@@ -30,7 +38,7 @@ async def edit_worklog_by_id(worklog_id: int, update_data: dict) -> WorkLog:
         if db_worklog is not None:
             for key, value in update_data.items():
                 setattr(db_worklog, key, value)
-            db_worklog.update_datetime = datetime.utcnow()
+            db_worklog.update_datetime = get_china_time()
             await db.commit()
             await db.refresh(db_worklog)
             return db_worklog
@@ -47,7 +55,7 @@ async def edit_worklog_by_uuid(worklog_uuid: str, update_data: dict) -> WorkLog:
         if db_worklog is not None:
             for key, value in update_data.items():
                 setattr(db_worklog, key, value)
-            db_worklog.update_datetime = datetime.utcnow()
+            db_worklog.update_datetime = get_china_time()
             await db.commit()
             await db.refresh(db_worklog)
             return db_worklog

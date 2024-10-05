@@ -4,6 +4,7 @@
       <div class="panel">
         <Banner />
         <DataPanel />
+        <three />
       </div>
     </div>
     <div class="footer">
@@ -16,6 +17,7 @@
   import Footer from '@/components/footer/index.vue';
   import Banner from './components/banner.vue';
   import DataPanel from './components/data-panel.vue';
+  import three from './components/three.vue';
 </script>
 
 <script lang="ts">
